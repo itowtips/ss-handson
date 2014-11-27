@@ -1,0 +1,19 @@
+<div class="blog-pages pages">
+  <% @items.each do |item| %>
+    <article>
+      <header>
+        <time datetime="<%= item.date.to_date %>">
+          <%= item.date.to_date %>
+        </time>
+        <span class="weather">
+          <%= t("blog.#{item.weather}") if item.weather.present? %>
+        </span>
+        <h2><a href="<%= item.url %>"><%= item.name %></a></h2>
+      </header>
+      <p><%= strip_tags(item.html).to_s.truncate(30) %></p>
+      <p><a href="<%= item.url %>" class="more"><%= t("blog.more") %></a></p>
+    </article>
+  <% end %>
+</div>
+
+<%= paginate @items if @items.try(:current_page) %>

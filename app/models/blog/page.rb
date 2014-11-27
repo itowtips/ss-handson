@@ -4,6 +4,7 @@ class Blog::Page
   include Cms::Addon::Meta
   include Cms::Addon::Body
   include Cms::Addon::File
+  include Blog::Addon::Weather
   include Cms::Addon::Release
   include Cms::Addon::ReleasePlan
   include Cms::Addon::RelatedPage

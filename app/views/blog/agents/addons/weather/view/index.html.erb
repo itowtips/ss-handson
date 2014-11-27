@@ -1,0 +1,8 @@
+<p class="released">
+  <time datetime="<%= @cur_page.date.to_date %>">
+    <%= @cur_page.date.to_date %>
+  </time>
+  <span class="weather">
+    <%= t("blog.#{@cur_page.weather}") if @cur_page.weather.present? %>
+  </span>
+</p>

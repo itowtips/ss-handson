@@ -1,0 +1,4 @@
+<dl class="see mod-weather-mark">
+  <dt><%= @model.t :weather %></dt>
+  <dd><%= f.select :weather, @item.weather_options, include_blank: "" %></dd>
+</dl>

@@ -1,41 +1,14 @@
-SHIRASAGI
+SHIRASAGI ハンズオン リポジトリ
 =========
+[SHIRASAGI](https://github.com/shirasagi/shirasagi)ハンズオンで使用するリポジトリです。<br>
+環境構築手順、コマンド集などを載せています。
 
-## ハンズオン用シラサギリポジトリ
- * 作成中
+## 大阪ハンズオン 02/27
 
-SHIRASAGI is Contents Management System.
+ * [コマンド集](./doc/hands-on-0227/hands-on.txt)
+ * ハンズオン用イメージ
+  * Amazon AMI: [大阪 ハンズオン用 AMI](./doc/hands-on-0227/hands-on-ami.md)
+  * Vagrant: [大阪 ハンズオン用 Vagrant Box](./doc/hands-on-0227/hands-on-vagrant.md)
 
-Platform
---------
-
-Ruby on Rails, MongoDB
-
-Documentation
--------------
-
-* [Official](http://ss-proj.org)
-* [Install](https://github.com/shirasagi/shirasagi/blob/master/doc/install.txt)
-
-License
--------
-
-Copyright (c) 2014 SHIRASAGI Project
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+## [WIKI 開発サンプル ブログページ](https://github.com/shirasagi/shirasagi/wiki/%E9%96%8B%E7%99%BA%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%EF%BC%9A%E3%83%96%E3%83%AD%E3%82%B0%E3%83%9A%E3%83%BC%E3%82%B8)
+## [公式インストールマニュアル](https://github.com/shirasagi/shirasagi/blob/master/doc/install.txt)

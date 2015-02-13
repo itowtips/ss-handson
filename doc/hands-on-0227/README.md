@@ -1,3 +1,6 @@
-### [松江　ハンズオン用　コマンド集](https://github.com/itowtips/hands-on/blob/master/hands-on.txt)
+### [大阪 ハンズオン用 コマンド集](./hands-on.txt)
 
-### [松江　ハンズオン用　AMI](https://github.com/itowtips/hands-on/blob/master/matsue-hands-on-ami.md)
+## ハンズオン用イメージ
+
+* Amazon AMI: [大阪 ハンズオン用 AMI](./hands-on-ami.md)
+* Vagrant: [大阪 ハンズオン用 Vagrant Box](./hands-on-vagrant.md)

@@ -232,8 +232,8 @@ class @SS_AddonTabs
 
 class @SS_Tooltips
   @render: (ttips)->
-    ttips = $(ttips)
-    ttips.click (ev) ->
+    $(document).on "click", ttips, (ev) ->
+      ttips = $(ttips)
       ttips.find("ul").hide()
       cur = $(this)
       hgt = cur.find("ul").outerHeight()
@@ -253,6 +253,7 @@ class @SS_Tooltips
       cur.find("ul").show()
 
     $(document).click (ev) ->
+      ttips = $(ttips)
       ttips.find("ul").hide() unless ttips.is($(ev.target).closest("div,span"))
 
 class @SS_Debug
@@ -353,15 +354,26 @@ class @SS_SearchUI
 
     SS_SearchUI.anchorAjaxBox.closest("dl").find(".ajax-selected tr[data-id]").each ->
       id = $(this).attr("data-id")
-      $("#colorbox .items [data-id=#{id}]").remove()
+      $("#colorbox .items [data-id='#{id}']").remove()
 
     SS_ListUI.render("table.index")
 
     $("#ajax-box a.select-item").on "click", (e)->
       id = $(this).closest("[data-id]").attr("data-id")
       name = $(this).text()
+      # append newly selected item
       SS_SearchUI.select({ id: id, name: name })
+      SS_SearchUI.anchorAjaxBox.closest("dl").find(".ajax-selected").show()
+      e.preventDefault()
+      $.colorbox.close()
 
+    $("#ajax-box .select-single-item").on "click", (e)->
+      id = $(this).closest("[data-id]").attr("data-id")
+      name = $(this).text()
+      # remove old items
+      SS_SearchUI.anchorAjaxBox.closest("dl").find(".ajax-selected tr[data-id]").remove()
+      # append newly selected item
+      SS_SearchUI.select({ id: id, name: name })
       SS_SearchUI.anchorAjaxBox.closest("dl").find(".ajax-selected").show()
       e.preventDefault()
       $.colorbox.close()

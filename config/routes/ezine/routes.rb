@@ -12,11 +12,12 @@ SS::Application.routes.draw do
       get :delivery_confirmation, on: :member
       get :delivery_test_confirmation, on: :member
       get :sent_logs, on: :member
-      get :preview_text, on: :member
       post :delivery, on: :member
       post :delivery_test, on: :member
     end
-    resources :members, concerns: :deletion
+    resources :members, concerns: :deletion do
+      get :download, on: :collection
+    end
     resources :test_members, concerns: :deletion
     resources :entries, concerns: :deletion
   end
@@ -27,7 +28,7 @@ SS::Application.routes.draw do
     get "page/update.:format" => "public#update", cell: "nodes/form"
     get "page/delete.:format" => "public#delete", cell: "nodes/form"
     post "page/confirm.:format" => "public#confirm", cell: "nodes/form"
-    get "page/verify.:format" => "public#verify", cell: "nodes/form"
+    get "page/verify(.:format)" => "public#verify", cell: "nodes/form"
     get "backnumber/(index.:format)" => "public#index", cell: "nodes/backnumber"
   end
 

@@ -7,9 +7,10 @@ ENV["RAILS_ENV"] ||= 'test'
 require File.expand_path("../../config/environment", __FILE__)
 require File.expand_path(__FILE__, "../../app/helpers")
 require 'rspec/rails'
-require 'rspec/autorun'
+#require 'rspec/autorun'
 require 'capybara/rspec'
 require 'capybara/rails'
+require 'database_cleaner'
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
@@ -26,45 +27,6 @@ SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
 SimpleCov.start do
   add_filter 'spec/'
   add_filter 'vendor/bundle'
-end
-
-def can_test_mecab_spec?
-  # In Travis Ci dictionares_controller#build failed because of there is no MeCab installed.
-  # So, before test, check whether we can do MeCab specific tests.
-  return false if SS.config.kana.disable
-  unless ::File.exists?(SS.config.kana.mecab_indexer)
-    puts("[MeCab Spec] not found: #{SS.config.kana.mecab_indexer}")
-    return false
-  end
-  unless ::File.exists?(SS.config.kana.mecab_dicdir)
-    puts("[MeCab Spec] not found: #{SS.config.kana.mecab_dicdir}")
-    return false
-  end
-  true
-end
-
-def can_test_open_jtalk_spec?
-  # be carefule, open jtalk spec is slow.
-  # you will waste a lot of time if you turn on allow_open_jtalk.
-  return false if ENV["allow_open_jtalk"].to_i == 0
-  return false if SS.config.voice.disable
-  unless ::File.exists?(SS.config.voice['openjtalk']['bin'])
-    puts("[Open JTalk Spec] not found: #{SS.config.voice['openjtalk']['bin']}")
-    return false
-  end
-  unless ::Dir.exists?(SS.config.voice['openjtalk']['dic'])
-    puts("[Open JTalk Spec] not found: #{SS.config.voice['openjtalk']['dic']}")
-    return false
-  end
-  unless ::File.exists?(SS.config.voice['openjtalk']['sox'])
-    puts("[Open JTalk Spec] not found: #{SS.config.voice['openjtalk']['sox']}")
-    return false
-  end
-  unless ::File.exists?(SS.config.voice['lame']['bin'])
-    puts("[Open JTalk Spec] not found: #{SS.config.voice['lame']['bin']}")
-    return false
-  end
-  true
 end
 
 RSpec.configure do |config|
@@ -96,6 +58,9 @@ RSpec.configure do |config|
   #config.order = "random"
   config.order = "order"
 
+  config.include Rails.application.routes.url_helpers
+  config.include Capybara::DSL
+
   config.include FactoryGirl::Syntax::Methods
   config.before do
     FactoryGirl.reload
@@ -103,8 +68,37 @@ RSpec.configure do |config|
 
   config.filter_run_excluding(mecab: true) unless can_test_mecab_spec?
   config.filter_run_excluding(open_jtalk: true) unless can_test_open_jtalk_spec?
+  config.filter_run_excluding(ldap: true) unless can_test_ldap_spec?
 
-  `rake db:drop`
+  if system("which phantomjs > /dev/null 2>&1")
+    begin
+      # found phantomjs, register poltergeist as a Capybara driver.
+      require 'capybara/poltergeist'
+      Capybara.register_driver :poltergeist do |app|
+        Capybara::Poltergeist::Driver.new(app, :inspector => true)
+      end
+      Capybara.javascript_driver = :poltergeist
+    rescue LoadError
+      config.filter_run_excluding(js: true)
+    end
+  else
+    config.filter_run_excluding(js: true)
+  end
+
+  config.before(:suite) do
+    # `rake db:drop`
+    ::Mongoid::Sessions.default.drop
+    # `rake db:create_indexes`
+    ::Rails.application.eager_load!
+    ::Mongoid::Tasks::Database.create_indexes
+
+    #
+    DatabaseCleaner[:mongoid].strategy = :truncation
+  end
+
+  config.add_setting :default_dbscope, default: :context
+  config.extend(SS::DatabaseCleanerSupport)
+  config.include(SS::JsSupport, js: true)
 end
 
 def unique_id

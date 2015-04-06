@@ -1,63 +1,81 @@
 require "open3"
 
 class Voice::MainController < ApplicationController
-  public
-    def index
+  before_action :check_voice_disable
+  before_action :set_url
+  before_action :lock_voice_file
+
+  private
+    def check_voice_disable
+      # raise "404" if SS.config.voice.disable
       if SS.config.voice.disable
         head :not_found
-        return
       end
+    end
 
-      url = get_and_normalize_path
-      if url.host.blank? || url.path.blank?
+    def set_url
+      @url = get_and_normalize_path
+      if @url.host.blank? || @url.path.blank?
         # path must not be either nil, empty.
-        logger.debug("malformed url: #{url}")
+        logger.debug("malformed url: #{@url}")
+        # raise "400"
         head :bad_request
-        return
       end
+    end
 
-      voice_file = Voice::VoiceFile.find_or_create_by_url url
+    def lock_voice_file
+      voice_file = Voice::File.find_or_create_by_url @url
+      # raise "404"
       unless voice_file
         head :not_found
         return
       end
 
-      voice_file = Voice::VoiceFile.acquire_lock voice_file
-      unless voice_file
+      @voice_file = Voice::File.acquire_lock voice_file
+      unless @voice_file
         head :accepted, retry_after: SS.config.voice.controller["retry_after"]
         return
       end
+    end
 
-      begin
-        if voice_file.latest?
-          Voice::VoiceFile.release_lock voice_file
-          send_audio_file(voice_file.file)
-          return
-        end
-
-        # check for whether be able to download.
-        voice_file.download
-      rescue
-        # http errors like 404 or 500.
-        if voice_file.exists?
-          Voice::VoiceFile.release_lock voice_file
-          send_audio_file(voice_file.file)
-          return
-        end
-
-        # do not record http errors like 404.
-        voice_file.destroy
-        head :not_found
+  public
+    def index
+      if @voice_file.latest?
+        Voice::File.release_lock @voice_file
+        send_audio_file(@voice_file.file)
         return
       end
 
+      # check for whether be able to download.
+      @voice_file.download
+
       # create voice file in background if successfully acquire lock
       # and do not release lock while voice is creating.
-      Voice::SynthesisJob.call_async voice_file.id do |job|
-        job.site_id = voice_file.site_id
+      Voice::SynthesisJob.call_async @voice_file.id do |job|
+        job.site_id = @voice_file.site_id
       end
-      run_job
+      SS::RakeRunner.run_async "job:run", "RAILS_ENV=#{Rails.env}"
       head :accepted, retry_after: SS.config.voice.controller["retry_after"]
+    rescue => e
+      logger.warn("#{e.class} (#{e.message}):\n  #{e.backtrace.join("\n  ")}")
+
+      # http errors like 404 or 500.
+      if @voice_file.exists?
+        Voice::File.release_lock @voice_file
+        send_audio_file(@voice_file.file)
+        return
+      end
+
+      if e.is_a?(Job::SizeLimitExceededError)
+        @voice_file.destroy
+        head :too_many_requests
+        return
+      end
+
+      # do not record http errors like 404.
+      @voice_file.destroy
+      head :not_found
+      return
     end
 
   private
@@ -84,12 +102,5 @@ class Voice::MainController < ApplicationController
       # see: Rack::Sendfile#call(env)
       file = ::File.new(file) unless file.respond_to?(:to_path)
       send_file file, disposition: :inline, x_sendfile: true
-    end
-
-    def run_job
-      # run job in other process which does not wait for exit.
-      cmd = "bundle exec rake job:run RAILS_ENV=#{Rails.env}"
-      logger.debug("system: #{cmd}")
-      stdin, stdout, stderr = Open3.popen3(cmd)
     end
 end

@@ -1,0 +1,10 @@
+<dl class="see chorg-revisions">
+  <dt><%= @model.t :name %></dt>
+  <dd><%= @item.name %></dd>
+  <% Chorg::Changeset::TYPES.each do |type| %>
+    <% changesets = @item.send("#{type}_changesets") %>
+    <% if changesets.present? %>
+      <%= render partial: "#{params[:action]}_#{type}", locals: { type: type, changesets: changesets } %>
+    <% end %>
+  <% end %>
+</dl>

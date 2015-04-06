@@ -28,17 +28,6 @@ module Cms::Content
     before_validation :validate_filename
     after_validation :set_depth, if: ->{ filename.present? }
 
-    scope :public, ->(date = nil) {
-      if date.nil?
-        where state: "public"
-      else
-        date = date.dup
-        where("$and" => [
-          { "$or" => [ { state: "public", :released.lte => date }, { :release_date.lte => date } ] },
-          { "$or" => [ { close_date: nil }, { :close_date.gt => date } ] },
-        ])
-      end
-    }
     scope :filename, ->(name) { where filename: name.sub(/^\//, "") }
     scope :node, ->(node) {
       node ? where(filename: /^#{node.filename}\//, depth: node.depth + 1) : where(depth: 1)
@@ -50,6 +39,18 @@ module Cms::Content
       def split_path(path)
         last = nil
         dirs = path.split('/').map {|n| last = last ? "#{last}/#{n}" : n }
+      end
+
+      def public(date = nil)
+        if date.nil?
+          where state: "public"
+        else
+          date = date.dup
+          where("$and" => [
+            { "$or" => [ { state: "public", :released.lte => date }, { :release_date.lte => date } ] },
+            { "$or" => [ { close_date: nil }, { :close_date.gt => date } ] },
+          ])
+        end
       end
 
       def search(params)
@@ -132,7 +133,9 @@ module Cms::Content
     end
 
     def becomes_with_route(name = nil)
-      name ||= route
+      # be careful, Cms::Layout does not respond to route
+      name ||= route if respond_to?(:route)
+      return self unless name
       klass = name.camelize.constantize rescue nil
       return self unless klass
 

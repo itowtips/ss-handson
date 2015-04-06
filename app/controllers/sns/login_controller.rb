@@ -7,25 +7,31 @@ class Sns::LoginController < ApplicationController
 
   private
     def get_params
-      params.require(:item).permit(:email, :password, :ref)
+      params.require(:item).permit(:email, :password)
     end
 
   public
     def login
-      @item = SS::User.new
-      @item.email    = params[:email]
-      @item.password = params[:password]
-      return if !request.post?
-
-      @item.attributes = get_params
-      user = SS::User.where(email: @item.email, password: SS::Crypt.crypt(@item.password)).first
-      return if !user
-
-      if params[:ref].blank? || [sns_login_path, sns_mypage_path].index(params[:ref])
-        return set_user user, session: true, redirect: true
+      if !request.post?
+        # retrieve parameters from get parameter. this is bookmark support.
+        @item = SS::User.new
+        @item.email = params[:email]
+        @item.password = params[:password]
+        return
       end
 
-      set_user user, session: true
+      safe_params = get_params
+      email_or_uid = safe_params[:email]
+      password = safe_params[:password]
+
+      @item = SS::User.authenticate(email_or_uid, password)
+      return if !@item
+
+      if params[:ref].blank? || [sns_login_path, sns_mypage_path].index(params[:ref])
+        return set_user @item, session: true, redirect: true, password: password
+      end
+
+      set_user @item, session: true, password: password
       render action: :redirect
     end
 

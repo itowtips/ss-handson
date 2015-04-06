@@ -6,9 +6,16 @@ SS::Application.routes.draw do
     get :delete, on: :member
   end
 
+  concern :crud do
+    get :move, :on => :member
+    put :move, :on => :member
+    get :copy, :on => :member
+    put :copy, :on => :member
+  end
+
   content "event" do
     get "/" => redirect { |p, req| "#{req.path}/pages" }, as: :main
-    resources :pages, concerns: :deletion
+    resources :pages, concerns: [:deletion, :crud]
   end
 
   node "event" do
@@ -28,7 +35,9 @@ SS::Application.routes.draw do
   end
 
   namespace "event", path: ".:site/event" do
-    get "/search_categories" => "search_categories#index"
+    namespace "apis" do
+      get "categories" => "categories#index"
+    end
   end
 
 end

@@ -4,8 +4,9 @@ class Ezine::Page
   include Cms::Addon::ReleasePlan
   include Ezine::Addon::Page::Body
 
-  field :results, type: Array, default: []
+  field :test_delivered, type: DateTime
   field :completed, type: Boolean, default: false
+  embeds_many :results, class_name: "Ezine::Result"
 
   before_save :seq_filename, if: ->{ basename.blank? }
 
@@ -32,7 +33,7 @@ class Ezine::Page
     def members_to_deliver
       return [] if completed
       emails = Ezine::SentLog.where(page_id: id).map(&:email)
-      Ezine::Member.where(node_id: parent.id, email: {"$nin" => emails})
+      Ezine::Member.where(state: true, node_id: parent.id, email: {"$nin" => emails})
     end
 
     # Deliver a mail to a member.
@@ -44,30 +45,26 @@ class Ezine::Page
     # 成功しかつテスト配信でなければ配信ログを作成する。
     #
     # @param [Ezine::Member, Ezine::TestMember] member
-    # @param [true, false] is_test
-    #
-    #   Test delivery or not. (default: false)
-    #
-    #   テスト配信であるかどうか。(デフォルト: false)
     #
     # @raise [Object]
     #   An error object from `ActionMailer#deliver`
     #
     #   `ActionMailer#deliver` メソッドからのエラーオブジェクト
-    def deliver_to(member, is_test: false)
+    def deliver_to(member)
       Ezine::Mailer.page_mail(self, member).deliver
       Ezine::SentLog.create(
         node_id: parent.id, page_id: id, email: member.email
-      ) unless is_test
+      ) unless member.test_member?
     end
 
     # Do a test delivery.
     #
     # テスト配信を行う。
     def deliver_to_test_members
-      Ezine::TestMember.all.each do |test_member|
-        deliver_to test_member, is_test: true
+      Ezine::TestMember.where(node_id: parent.id).each do |test_member|
+        deliver_to test_member
       end
+      update test_delivered: Time.now
     end
 
   private

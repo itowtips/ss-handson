@@ -88,7 +88,7 @@ class Job::Service
       with_task do |task, job_log|
         begin
           Rails.logger.info("Started Job #{task.id}")
-          job_log.state = "running"
+          job_log.state = Job::Log::STATE_RUNNING
           job_log.started = Time.now
           job_log.save
 
@@ -97,15 +97,20 @@ class Job::Service
             job.call *(task.args)
           end
 
-          job_log.state = "completed"
+          job_log.state = Job::Log::STATE_COMPLETED
           job_log.closed = Time.now
           Rails.logger.info("Completed Job #{task.id} in #{time * 1000} ms")
         rescue Exception => e
-          job_log.state = "failed"
+          job_log.state = Job::Log::STATE_FAILED
           job_log.closed = Time.now
-          Rails.logger.fatal("Failed Job #{task.id}: #{e.class} (#{e.message}):\n  #{e.backtrace[0..5].join('\n  ')}")
+          Rails.logger.fatal("Failed Job #{task.id}: #{e.class} (#{e.message}):\n  #{e.backtrace.join("\n  ")}")
+          raise if system_error?(e)
         end
       end
+    end
+
+    def system_error?(e)
+      e.kind_of?(NoMemoryError) || e.kind_of?(SignalException) || e.kind_of?(SystemExit) || e.kind_of?(fatal)
     end
 
     def create_job(task)
@@ -126,7 +131,7 @@ class Job::Service
 
     def dequeue_task
       config["poll"].each do |queue_name|
-        task = Job::Model.dequeue(queue_name)
+        task = Job::Task.dequeue(queue_name)
         return task if task
       end
 

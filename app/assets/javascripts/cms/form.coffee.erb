@@ -7,6 +7,7 @@ $(window).load ->
   Syntax_Checker.render()
   Link_Checker.render()
 
+  Form_Alert.addValidation(Form_Alert.clonedName)
   Form_Alert.addValidation(Form_Alert.presence)
   Form_Alert.addValidation(Syntax_Checker.validateHtml)
   Form_Alert.render()
@@ -97,7 +98,7 @@ class @Syntax_Checker
       $('.mod-cms-body dd:last').after(result)
       return true
 
-  @validateHtml: (form)->
+  @validateHtml: (form, submit)->
     unless Syntax_Checker.check()
       addonName = "<%= I18n.t('cms.syntax_check') %>"
       for key, errors of Syntax_Checker.errors
@@ -474,6 +475,7 @@ class @Link_Checker
   @links = {}
   @error = ""
   @url = "<%= SS.config.cms.link_check_url %>" || "/.cms/link_check/check.json"
+  @rootUrl = ""
 
   @render: ()->
     $(".mod-cms-body button.link-check").on "click", ->
@@ -516,6 +518,14 @@ class @Link_Checker
     @error = ""
     return
 
+  @addMessage: (link, state)->
+    if state
+      msg =  '<span class="success">' + Link_Checker.message["success"] + '</span>'
+      Link_Checker.links[link] = link + " " + msg
+    else
+      msg =  '<span class="failure">' + Link_Checker.message["failure"] + '</span>'
+      Link_Checker.links[link] = link + " " + msg
+
   @check: (html, complete)->
     numOfLinks = $(html).find('a[href]').length
     if numOfLinks == 0
@@ -525,7 +535,14 @@ class @Link_Checker
 
     links = {}
     for href, i in $(html).find('a[href]')
-      links[i + 1] = $(href).attr('href')
+      link = $(href).attr('href')
+      continue if link == "#"
+
+      if link[0] == "#"
+        Link_Checker.addMessage(link, $(html).find(link).length != 0)
+      else
+        link = Link_Checker.rootUrl + link.slice(1) if /^\//.test(link)
+        links[i + 1] = link
 
     $.ajax {
       type: "POST", url: Link_Checker.url, cache: false,
@@ -535,12 +552,7 @@ class @Link_Checker
       crossDomain: true,
       success: (res, status) ->
         for link, code of res
-          if code == 200
-            msg =  '<span class="success">' + Link_Checker.message["success"] + '</span>'
-            Link_Checker.links[link] = link + " " + msg
-          else
-            msg =  '<span class="failure">' + Link_Checker.message["failure"] + '</span>'
-            Link_Checker.links[link] = link + " " + msg
+          Link_Checker.addMessage(link, (code == 200))
         return
       error: (xhr, status, error) ->
         Link_Checker.error = "<p>" + Link_Checker.message["linkCheckerError"] + ": " + Link_Checker.url + "</p>"
@@ -560,7 +572,7 @@ class @Form_Alert
       submit = this
       form   = $(submit).closest("form")
 
-      unless Form_Alert.validate(form)
+      unless Form_Alert.validate(form, submit)
         div = $('<div id="alertExplanation" class="errorExplanation">')
         div.append("<h2><%= I18n.t('cms.alert') %></h2>")
         for addon, fields of Form_Alert.alerts
@@ -575,6 +587,7 @@ class @Form_Alert
 
         $.colorbox(
           html: div.get(0).outerHTML + footer.get(0).outerHTML,
+          maxHeight: "80%",
           fixed: true
         )
 
@@ -588,10 +601,10 @@ class @Form_Alert
 
         return false
 
-  @validate: (form)->
+  @validate: (form, submit)->
     Form_Alert.alerts = {}
     $.each Form_Alert.validations, ->
-      (this)(form)
+      (this)(form, submit)
 
     if $.isEmptyObject(Form_Alert.alerts)
       return ture
@@ -601,13 +614,20 @@ class @Form_Alert
   @addValidation: (validate)->
     Form_Alert.validations.push(validate)
 
-  @presence: (form)->
+  @presence: (form, submit)->
     $(form).find("input.presence,textarea.presence").each ->
       if $(this).val() == ""
         $(this).closest("dl").show()
         addonName = $(this).closest(".addon-view").find("header").text()
         fieldName = Form_Alert.justText($(this).closest("dd").prev("dt"))
         Form_Alert.add addonName, this, fieldName + "<%= I18n.t('errors.messages.blank') %>"
+
+  @clonedName: (form, submit)->
+    name = $(form).find("#addon-basic #item_name")
+    if $(submit).hasClass("publish_save") && /^\[<%= I18n.t('workflow.cloned_name_prefix') %>\]/.test($(name).val())
+      addonName = $(name).closest(".addon-view").find("header").text()
+      fieldName = Form_Alert.justText($(name).closest("dd").prev("dt"))
+      Form_Alert.add addonName, name, "<%= I18n.t('errors.messages.cloned_name') %>"
 
   @add: (addon, ele, msg)->
     Form_Alert.alerts[addon] ||= []

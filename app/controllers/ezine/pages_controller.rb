@@ -13,7 +13,7 @@ class Ezine::PagesController < ApplicationController
     end
 
     def pre_params
-      { state: 'closed' }
+      super.merge(state: 'closed')
     end
 
     def load_pages
@@ -27,7 +27,7 @@ class Ezine::PagesController < ApplicationController
     end
 
     def load_members(model)
-      @members = model.site(@cur_site).order_by(updated: -1)
+      @members = model.where(node_id: @cur_node.id).enabled.order_by(updated: -1)
       @members_email = @members.reduce("") {|a, e| a += e.email + "\n"}
     end
 
@@ -37,40 +37,43 @@ class Ezine::PagesController < ApplicationController
     end
 
     def delivery_confirmation
+      @crumbs << [:"ezine.deliver", action: :delivery_confirmation]
+
       set_item
       load_members Ezine::Member
     end
 
     def delivery
+      @crumbs << [:"ezine.deliver", action: :delivery_confirmation]
+
       page = Ezine::Page.find(params[:id])
-      require "open3"
-      cmd = "bundle exec rake ezine:deliver page_id=#{page.id} &"
-      stdin, stdout, stderr = Open3.popen3(cmd)
-      redirect_to({ action: :delivery_confirmation }, { notice: "配信を開始しました" })
+      SS::RakeRunner.run_async "ezine:deliver", "page_id=#{page.id}"
+      redirect_to({ action: :delivery_confirmation }, { notice: t("ezine.notice.delivered") })
     end
 
     def delivery_test_confirmation
+      @crumbs << [:"ezine.deliver_test", action: :delivery_test_confirmation]
+
       set_item
       load_members Ezine::TestMember
     end
 
     def delivery_test
+      @crumbs << [:"ezine.deliver_test", action: :delivery_test_confirmation]
+
       page = Ezine::Page.find(params[:id])
       page.deliver_to_test_members
-      redirect_to({ action: :delivery_test_confirmation }, { notice: "テスト配信を完了しました" })
+      redirect_to({ action: :delivery_test_confirmation }, { notice: t("ezine.notice.delivered_test") })
     end
 
     def sent_logs
       raise "403" unless @cur_node.allowed?(:read, @cur_user, site: @cur_site)
 
+      @crumbs << [:"ezine.sent_log", action: :sent_logs]
+
+      set_item
       @items = Ezine::SentLog.where(node_id: params[:cid], page_id: params[:id]).
         order_by(created: -1).
         page(params[:page]).per(50)
-    end
-
-    def preview_text
-      load_pages
-      item = @items.find(params[:id])
-      render text: item.text.gsub(/\r\n|\r|\n/, "<br />")
     end
 end

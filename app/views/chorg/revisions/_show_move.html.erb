@@ -1,0 +1,28 @@
+<dt class="chorg-revisions-<%= type %>"><%= t :"chorg.views.revisions/#{params[:action]}.#{type}" %></dt>
+<dd class="chorg-revisions-<%= type %>">
+  <table class="index">
+    <thead>
+      <tr>
+        <th><%= t("chorg.views.revisions/#{params[:action]}.#{type}_after") %></th>
+        <th><%= t("chorg.views.revisions/#{params[:action]}.#{type}_before") %></th>
+      </tr>
+    </thead>
+    <tbody>
+    <% changesets.each do |changeset| %>
+      <tr>
+        <td>
+          <%= link_to changeset.after_move, chorg_changesets_changeset_path(rid: @item, type: changeset.type, id: changeset) %>
+          <nav class="tap-menu">
+            <%= link_to :show, chorg_changesets_changeset_path(rid: @item, type: changeset.type, id: changeset) %>
+            <%= link_to :edit, edit_chorg_changesets_changeset_path(rid: @item, type: changeset.type, id: changeset) %>
+            <%= link_to :delete, delete_chorg_changesets_changeset_path(rid: @item, type: changeset.type, id: changeset) %>
+          </nav>
+        </td>
+        <td>
+          <%= changeset.before_move %>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+</dd>

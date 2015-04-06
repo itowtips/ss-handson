@@ -2,6 +2,10 @@ module Cms::PageFilter
   extend ActiveSupport::Concern
   include Cms::CrudFilter
 
+  included do
+    before_action :set_item, only: [:show, :edit, :update, :delete, :destroy, :move, :copy]
+  end
+
   private
     def pre_params
       if @cur_node
@@ -43,6 +47,48 @@ module Cms::PageFilter
         raise "403" unless @item.allowed?(:release, @cur_user)
         @item.state = "ready" if @item.release_date
       end
-      render_update @item.update
+
+      result = @item.update
+      location = nil
+      if result && @item.try(:branch?) && @item.state == "public"
+        location = { action: :index }
+        @item.delete
+      end
+      render_update result, location: location
+    end
+
+    def move
+      @filename   = params[:filename]
+      @source     = params[:source]
+      @link_check = params[:link_check]
+      destination = params[:destination]
+      confirm     = params[:confirm]
+
+      if request.get?
+        @filename = @item.filename
+      elsif confirm
+        @source = "/#{@item.filename}"
+        @item.validate_destination_filename(destination)
+        @item.filename = destination
+        @link_check = @item.errors.empty?
+      else
+        @source = "/#{@item.filename}"
+        raise "403" unless @item.allowed?(:move, @cur_user, site: @cur_site, node: @cur_node)
+
+        location = { action: :move, source: @source, link_check: true }
+        render_update @item.move(destination), location: location, render: { file: :move }
+      end
+    end
+
+    def copy
+      if request.get?
+        prefix = I18n.t("workflow.cloned_name_prefix")
+        @item.name = "[#{prefix}] #{@item.name}" unless @item.cloned_name?
+        return
+      end
+
+      @item.attributes = get_params
+      @copy = @item.new_clone
+      render_update @copy.save, location: { action: :index }, render: { file: :copy }
     end
 end

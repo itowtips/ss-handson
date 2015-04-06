@@ -4,7 +4,6 @@ SHIRASAGI ハンズオン リポジトリ
 環境構築手順、コマンド集などを載せています。
 
 ## 東京ハンズオン 04/22
-
  * [コマンド集](./doc/hands-on-0422/hands-on.txt)
  * ハンズオン用イメージ
   * Amazon AMI: [東京 ハンズオン用 AMI](./doc/hands-on-0422/hands-on-ami.md)

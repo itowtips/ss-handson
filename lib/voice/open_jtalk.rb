@@ -34,14 +34,14 @@ class Voice::OpenJtalk
   private
     def synthesize(tmpdir, site_id, text)
       tmp_source = build_source(tmpdir, site_id, text)
-      tmp_output = ::File.join(tmpdir, ::Dir::Tmpname.make_tmpname(['talk', '.wav'], nil))
+      tmp_output = ::File.join(tmpdir, ::Dir::Tmpname.make_tmpname(["voice", ".wav"], nil))
 
       run_openjtalk(tmp_source, tmp_output)
       tmp_output
     end
 
     def build_source(tmpdir, site_id, text)
-      tmp_source = ::File.join(tmpdir, ::Dir::Tmpname.make_tmpname(['talk', '.txt'], nil))
+      tmp_source = ::File.join(tmpdir, ::Dir::Tmpname.make_tmpname(["voice", ".txt"], nil))
       File.open(tmp_source, "w", encoding: Encoding::UTF_8) do |source|
         Voice::MecabParser.new(site_id, text).each do |start_pos, end_pos, hyoki, yomi|
           yomi = yomi.nil? ? hyoki : yomi
@@ -62,11 +62,8 @@ class Voice::OpenJtalk
       cmd << " #{@openjtalk_opts}" if @openjtalk_opts.present?
       cmd << %( "#{input}")
 
-      Rails.logger.debug("system: #{cmd}")
-      require "open3"
-      stdout, stderr, status = Open3.capture3(cmd)
-      Rails.logger.debug("[openjtalk stdout] #{stdout}") if stdout.present?
-      Rails.logger.info("[openjtalk stderr] #{stderr}") if stderr.present?
+      # execute command
+      status = Voice::Command.run_with_logging(cmd, "openjtalk")
 
       raise Voice::VoiceSynthesisError, I18n.t("voice.synthesis_fail.open_jtalk") unless status.exitstatus == 0
       raise Voice::VoiceSynthesisError, I18n.t("voice.synthesis_fail.open_jtalk") unless ::File.exists?(output)
@@ -83,15 +80,12 @@ class Voice::OpenJtalk
       end
 
       # run sox
-      tmp_output = ::File.join(tmpdir, ::Dir::Tmpname.make_tmpname(['talk', '.wav'], nil))
+      tmp_output = ::File.join(tmpdir, ::Dir::Tmpname.make_tmpname(["voice", ".wav"], nil))
       source_list = sources.map{|i| %("#{i}")}.join(" ")
       cmd = %("#{@sox_path}" #{source_list} "#{tmp_output}")
-      Rails.logger.debug("system: #{cmd}")
-      require "open3"
-      stdout, stderr, status = Open3.capture3(cmd)
-      Rails.logger.debug("[sox stdout] #{stdout}") if stdout.present?
-      Rails.logger.info("[sox stderr] #{stderr}") if stderr.present?
 
+      # execute command
+      status = Voice::Command.run_with_logging(cmd, "sox")
       raise Voice::VoiceSynthesisError, I18n.t("voice.synthesis_fail.sox") unless status.exitstatus == 0
 
       ::FileUtils.copy(tmp_output, output)

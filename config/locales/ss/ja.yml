@@ -11,8 +11,11 @@ ja:
     upload: アップロード
     download: ダウンロード
     import: インポート
+    confirm: 確認
     file: ファイル
     image: 画像
+    url: URL
+    regexp: 正規表現
     state:
       public: 公開中
       closed: 非公開
@@ -24,6 +27,8 @@ ja:
       new: 新規作成
       show: 詳細を見る
       edit: 編集する
+      move: 移動する
+      copy: 複製する
       delete: 削除する
       import: インポート
       back_to_show: 詳細へ戻る
@@ -35,7 +40,6 @@ ja:
       change: 変更する
       more: もっと見る
       delete_all: すべて削除する
-      build_kana_dictionary: 辞書反映
     button:
       save: 保存
       draft_save: 下書き保存
@@ -44,11 +48,15 @@ ja:
       cancel: キャンセル
       delete: 削除
       search: 検索
+      replace: 置換
+      replace_all: 全置換
       reset: リセット
       toggle: 折りたたみ表示
+      move: 移動
     confirm:
       delete: 削除してよろしいですか？
       unload: 入力したデータは保存されません。
+      clone: 複製してよろしいですか？
     notice:
       saved: 保存しました。
       deleted: 削除しました。
@@ -57,13 +65,21 @@ ja:
       interrupted: 中断命令を送信しました。
       confirm_reset: 処理が終わっていない場合、複数回実行されてしまいます。\nタスクを削除してよろしいですか？
 
+  ss:
+    views:
+      login/login:
+        id: ユーザーIDまたはメールアドレス
+        password: パスワード
+
   mongoid:
     models:
       ss/site: サイト
       ss/user: ユーザー
+      ss/group: グループ
       ss/temp_file: 一時ファイル
       ss/user_file: ユーザーファイル
       ss/group_file: グループファイル
+      ss/task: タスク
     attributes:
       ss/document:
         created: 作成日時
@@ -84,13 +100,19 @@ ja:
         group_ids: グループ
       ss/user/model:
         name: 氏名
+        uid: ユーザーID
         email: メールアドレス
         password: パスワード
         in_password: パスワード
         group_ids: グループ
         type: ユーザータイプ
-      ss/group:
+        sns: SNSユーザー
+        ldap: LDAPユーザー
+      ss/group/model:
         name: グループ名
+        order: 表示順
+      ss/reference/user:
+        user_id: ユーザー
       ss/reference/site:
         site_id: サイト
       ss/task/model:
@@ -118,8 +140,8 @@ ja:
       layout_id:
         - ページのレイアウトを選択します。
       order:
-        - フォルダの並び順の設定で「指定順」を指定している場合に利用します。
-        - 数字が大きいほど一覧ページの上位にリンクが表示されます。
+        - フォルダーの並び順の設定で「指定順」を指定している場合に利用します。
+        - 数字が小さいほど一覧ページの上位にリンクが表示されます。
       keywords: &tooltip_keywords
         - 検索エンジン用のキーワードの設定に利用します。
         - 「,」で区切ることにより複数のキーワードの設定が可能です。
@@ -128,7 +150,7 @@ ja:
       summary_html: &tooltip_summary_html
         - 一覧ページで表示するページの概要に利用します。
         - |-
-          一覧系のフォルダのループHTMLの設定で下記のように記述した箇所に表示されます。
+          一覧系のフォルダーのループHTMLの設定で下記のように記述した箇所に表示されます。
           #{summary}
       released:
         - ページに表示する更新日の指定に利用します。

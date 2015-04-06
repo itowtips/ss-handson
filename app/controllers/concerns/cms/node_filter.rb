@@ -3,6 +3,7 @@ module Cms::NodeFilter
   include Cms::CrudFilter
 
   included do
+    before_action :set_item, only: [:show, :edit, :update, :delete, :destroy, :move]
     before_action :change_item_class, if: -> { @item.present? }
   end
 
@@ -13,7 +14,9 @@ module Cms::NodeFilter
 
     def set_item
       super
-      raise "404" if @cur_node && @item.id == @cur_node.id
+      if @cur_node
+        raise "500" if @item.id == @cur_node.id && @item.collection_name.to_s == "cms_nodes"
+      end
     end
 
     def change_item_class
@@ -57,5 +60,28 @@ module Cms::NodeFilter
       @item.in_updated = params[:_updated] if @item.respond_to?(:in_updated)
       raise "403" unless @item.allowed?(:edit, @cur_user, site: @cur_site, node: @cur_node)
       render_update @item.update, location: redirect_url
+    end
+
+    def move
+      @filename   = params[:filename]
+      @source     = params[:source]
+      @link_check = params[:link_check]
+      destination = params[:destination]
+      confirm     = params[:confirm]
+
+      if request.get?
+        @filename = @item.filename
+      elsif confirm
+        @source = "/#{@item.filename}/"
+        @item.validate_destination_filename(destination)
+        @item.filename = destination
+        @link_check = @item.errors.empty?
+      else
+        @source = "/#{@item.filename}/"
+        raise "403" unless @item.allowed?(:move, @cur_user, site: @cur_site, node: @cur_node)
+
+        location = { action: :move, source: @source, link_check: true }
+        render_update @item.move(destination), location: location, render: { file: :move }
+      end
     end
 end

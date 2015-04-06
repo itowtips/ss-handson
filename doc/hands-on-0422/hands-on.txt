@@ -1,0 +1,51 @@
+#準備
+git clone https://github.com/itowtips/ss-handson sample
+cd sample
+cp config/samples/* config/
+bundle install
+
+vi config/mongoid.yml
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# mongodb configuration
+production:
+  sessions:
+    default:
+      database: ss_sample
+
+development:
+  sessions:
+    default:
+      database: ss_sample
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+vi config/environment.yml
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# default environment
+RAILS_ENV: development
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+rake db:create_indexes
+rake ss:create_user data='{ name: "システム管理者", email: "sys@example.jp", password: "pass" }'
+rake ss:create_site data='{ name: "サイト名", host: "www", domains: "ドメイン:3000" }'
+rake db:seed name=users site=www
+rake db:seed name=demo site=www
+rake unicorn:start
+
+#ブログページ作成
+git checkout -b sample-blog-page origin/sample-blog-page
+rake unicorn:stop
+rake unicorn:start
+
+#Mongoドキュメント確認
+mongo
+use ss_sample
+db.cms_pages.find({route: "blog/page"})
+
+#天気入力フォーム作成
+git checkout -b sample-blog-addon origin/sample-blog-addon
+rake unicorn:restart
+
+#一覧フォルダー作成
+git checkout -b sample-blog-node origin/sample-blog-node
+rake unicorn:restart
+

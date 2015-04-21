@@ -1,15 +1,15 @@
-“Œ‹ SHIRASAGI ƒnƒ“ƒYƒIƒ“—p Vagrant
+æ±äº¬ SHIRASAGI ãƒãƒ³ã‚ºã‚ªãƒ³ç”¨ Vagrant
 ===
 
-“Œ‹ SHIRASAGI ƒnƒ“ƒYƒIƒ“—p Vagrant‚ğŒöŠJ‚µ‚Ü‚·B
+æ±äº¬ SHIRASAGI ãƒãƒ³ã‚ºã‚ªãƒ³ç”¨ Vagrantã‚’å…¬é–‹ã—ã¾ã™ã€‚
 
-## g—p•û–@
+## ä½¿ç”¨æ–¹æ³•
 
-“K“–‚ÈƒfƒBƒŒƒNƒgƒŠ‚ğì¬‚µAŸ‚Ì‚æ‚¤‚È“à—e‚ğ‚Â  Vagrantfile  ‚ğì¬‚µ‚Ä‚­‚¾‚³‚¢B
+é©å½“ãªãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ä½œæˆã—ã€æ¬¡ã®ã‚ˆã†ãªå†…å®¹ã‚’æŒã¤  Vagrantfile  ã‚’ä½œæˆã—ã¦ãã ã•ã„ã€‚
 
 ```
-$ mkdir osaka-handson
-$ cd osaka-handson
+$ mkdir tokyo-handson
+$ cd tokyo-handson
 $ cat Vagrantfile
 VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -19,28 +19,28 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provider :virtualbox do |vb|
     # see: http://blog.shibayu36.org/entry/2013/08/12/090545
-    # IPv6 ‚Æ DNS ‚Å‚Ìƒlƒbƒgƒ[ƒN’x‰„‘Îô‚Å’Ç‹L
+    # IPv6 ã¨ DNS ã§ã®ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯é…å»¶å¯¾ç­–ã§è¿½è¨˜
     vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
     vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
   end
 end
 ```
 
-Ÿ‚ÌƒRƒ}ƒ“ƒh‚Å‹N“®‚Å‚«‚Ü‚·B
+æ¬¡ã®ã‚³ãƒãƒ³ãƒ‰ã§èµ·å‹•ã§ãã¾ã™ã€‚
 
 ```
 $ vagrant up
 ```
 
-5 •ª‚©‚ç 10 •ª‚®‚ç‚¢‚©‚©‚é‚Ì‚ÅAƒR[ƒq[‚Å‚àˆù‚İ‚È‚ª‚ç‘Ò‚Á‚Ä‚­‚¾‚³‚¢B
+5 åˆ†ã‹ã‚‰ 10 åˆ†ãã‚‰ã„ã‹ã‹ã‚‹ã®ã§ã€ã‚³ãƒ¼ãƒ’ãƒ¼ã§ã‚‚é£²ã¿ãªãŒã‚‰å¾…ã£ã¦ãã ã•ã„ã€‚
 
-‹N“®‚µ‚½‚ç ssh ƒNƒ‰ƒCƒAƒ“ƒg‚ÅƒƒOƒCƒ“‚µ‚Ä‚­‚¾‚³‚¢B
+èµ·å‹•ã—ãŸã‚‰ ssh ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã§ãƒ­ã‚°ã‚¤ãƒ³ã—ã¦ãã ã•ã„ã€‚
 * host: localhost
 * port: 2222
 * user: vagrant
 * password: vagrant
 
-“Œ‹ SHIRASAGI ƒnƒ“ƒYƒIƒ“—p Vagrant ‚É‚ÍASHIRASAGI ‚ª `/vagrant/home` ‚ÉƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚Ü‚·B
+æ±äº¬ SHIRASAGI ãƒãƒ³ã‚ºã‚ªãƒ³ç”¨ Vagrant ã«ã¯ã€SHIRASAGI ãŒ `/vagrant/home` ã«ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã¾ã™ã€‚
 
 ```
 $ tree -L 2 /vagrant/home
@@ -65,7 +65,7 @@ $ tree -L 2 /vagrant/home
     `-- vendor
 ```
 
-SHIRASAGI ‚ğ‹N“®‚µ‚Ä‚İ‚Ü‚µ‚å‚¤B
+SHIRASAGI ã‚’èµ·å‹•ã—ã¦ã¿ã¾ã—ã‚‡ã†ã€‚
 
 ```
 $ cd $HOME/shirasagi
@@ -73,24 +73,24 @@ $ bundle exec rake unicorn:start
 bundle exec unicorn_rails -c /home/vagrant/shirasagi/config/unicorn.rb -E production -D
 ```
 
-ƒuƒ‰ƒEƒU‚Å "http://localhost:3000/" ‚ÉƒAƒNƒZƒX‚µ‚Ä‚İ‚Ü‚µ‚å‚¤B Ÿ‚Ì‚æ‚¤‚È‰æ–Ê‚ª•\¦‚³‚ê‚½¬Œ÷‚Å‚·B
+ãƒ–ãƒ©ã‚¦ã‚¶ã§ "http://localhost:3000/" ã«ã‚¢ã‚¯ã‚»ã‚¹ã—ã¦ã¿ã¾ã—ã‚‡ã†ã€‚ æ¬¡ã®ã‚ˆã†ãªç”»é¢ãŒè¡¨ç¤ºã•ã‚ŒãŸæˆåŠŸã§ã™ã€‚
 
 ![SHIRASAGI TOP](images/top-min.png)
 
 
-## Vagrant ‚É‚Â‚¢‚Ä
+## Vagrant ã«ã¤ã„ã¦
 
-Vagrant Box ‚ğg—p‚·‚é‚É‚ÍA•Ê“r VirtualBox ‚Æ Vagrant ‚ÌƒCƒ“ƒXƒg[ƒ‹‚ª•K—v‚Å‚·B
-‚»‚ê‚¼‚êˆÈ‰º‚ÌêŠ‚©‚çƒ_ƒEƒ“ƒ[ƒh‚µAƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä‚­‚¾‚³‚¢B
+Vagrant Box ã‚’ä½¿ç”¨ã™ã‚‹ã«ã¯ã€åˆ¥é€” VirtualBox ã¨ Vagrant ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ãŒå¿…è¦ã§ã™ã€‚
+ãã‚Œãã‚Œä»¥ä¸‹ã®å ´æ‰€ã‹ã‚‰ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã€ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¦ãã ã•ã„ã€‚
 
 * VirtualBox: [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
 * Vagrant: [Vagrant Download](http://www.vagrantup.com/downloads.html)
 
 
-## Vagrant Box ‚Ì’†g
+## Vagrant Box ã®ä¸­èº«
 
-* CentOS 6.6 (2015-04-06 “_‚Å‚ÌÅV)
+* CentOS 6.6 (2015-04-06 æ™‚ç‚¹ã§ã®æœ€æ–°)
 * MongoDB 2.6.9
 * Ruby 2.2.1p85
-* SHIRASAGI ‚Ìƒ\[ƒXˆê® (2015-04-06 “_‚Å‚ÌÅV)
+* SHIRASAGI ã®ã‚½ãƒ¼ã‚¹ä¸€å¼ (2015-04-06 æ™‚ç‚¹ã§ã®æœ€æ–°)
 

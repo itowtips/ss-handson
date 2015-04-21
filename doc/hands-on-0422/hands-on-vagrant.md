@@ -9,8 +9,8 @@
 
 64 ビット OS をお使いの方:
 
-    $ mkdir osaka-handson
-    $ cd osaka-handson
+    $ mkdir tokyo-handson
+    $ cd tokyo-handson
     $ cat Vagrantfile
     VAGRANTFILE_API_VERSION = "2"
     Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -28,8 +28,8 @@
 
 32 ビット OS をお使いの方:
 
-    $ mkdir osaka-handson
-    $ cd osaka-handson
+    $ mkdir tokyo-handson
+    $ cd tokyo-handson
     $ cat Vagrantfile
     VAGRANTFILE_API_VERSION = "2"
     Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|

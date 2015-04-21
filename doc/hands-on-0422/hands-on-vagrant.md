@@ -7,24 +7,43 @@
 
 適当なディレクトリを作成し、次のような内容を持つ  Vagrantfile  を作成してください。
 
-```
-$ mkdir tokyo-handson
-$ cd tokyo-handson
-$ cat Vagrantfile
-VAGRANTFILE_API_VERSION = "2"
-Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "ss-vagrant"
-  config.vm.box_url = "https://github.com/shirasagi/ss-vagrant/releases/download/v0.7.0-SNAPSHOT-20150406-1849/ss-vagrant-virtualbox.box"
-  config.vm.network :forwarded_port, guest: 3000, host: 3000
+64 ビット OS をお使いの方:
 
-  config.vm.provider :virtualbox do |vb|
-    # see: http://blog.shibayu36.org/entry/2013/08/12/090545
-    # IPv6 と DNS でのネットワーク遅延対策で追記
-    vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
-    vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
-  end
-end
-```
+    $ mkdir osaka-handson
+    $ cd osaka-handson
+    $ cat Vagrantfile
+    VAGRANTFILE_API_VERSION = "2"
+    Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+      config.vm.box = "ss-vagrant"
+      config.vm.box_url = "https://github.com/shirasagi/ss-vagrant/releases/download/v0.7.0-SNAPSHOT-20150406-1849/ss-vagrant-virtualbox.box"
+      config.vm.network :forwarded_port, guest: 3000, host: 3000
+
+      config.vm.provider :virtualbox do |vb|
+        # see: http://blog.shibayu36.org/entry/2013/08/12/090545
+        # IPv6 と DNS でのネットワーク遅延対策で追記
+        vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
+        vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
+      end
+    end
+
+32 ビット OS をお使いの方:
+
+    $ mkdir osaka-handson
+    $ cd osaka-handson
+    $ cat Vagrantfile
+    VAGRANTFILE_API_VERSION = "2"
+    Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+      config.vm.box = "ss-vagrant"
+      config.vm.box_url = "https://github.com/shirasagi/ss-vagrant/releases/download/v0.7.0-SNAPSHOT-20150406-1849/ss-vagrant-virtualbox-i386.box"
+      config.vm.network :forwarded_port, guest: 3000, host: 3000
+
+      config.vm.provider :virtualbox do |vb|
+        # see: http://blog.shibayu36.org/entry/2013/08/12/090545
+        # IPv6 と DNS でのネットワーク遅延対策で追記
+        vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
+        vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
+      end
+    end
 
 次のコマンドで起動できます。
 
@@ -94,3 +113,6 @@ Vagrant Box を使用するには、別途 VirtualBox と Vagrant のインス�
 * Ruby 2.2.1p85
 * SHIRASAGI のソース一式 (2015-04-06 時点での最新)
 
+32 ビット版の制限:
+
+* MongoDB の最大サイズがジャーナルを含めて 2 GB に制限されています。

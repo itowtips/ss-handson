@@ -1,8 +1,10 @@
 ja:
   inquiry:
     form: メールフォーム
+    nodes: フォーム一覧
     column: 質問項目
     answer: 回答データ
+    result: 集計結果
     required_field: ※必須入力
     confirm_message: 下記事項をご確認の上、送信ボタンを押してください。
     submit: 送信する
@@ -10,6 +12,30 @@ ja:
     confirm: 確認画面へ
     notify: 自動通知
     reply: 自動返信
+    total_count: 総回答数
+    reception_plan: 回答受付期間
+    aggregate: 集計
+    from: から
+    confirm_input: "%{name}確認用"
+    confirm_input_description: "もう一度、同じ%{name}を入力してください。"
+
+    options:
+      state:
+        enabled: 使用する
+        disabled: 使用しない
+      required:
+        required: 必須
+        optional: 任意
+      input_type:
+        text_field: テキストボックス
+        text_area: テキストエリア
+        email_field: メールアドレス
+        radio_button: ラジオボタン選択
+        select: プルダウン選択
+        check_box: チェックボックス選択
+      input_confirm:
+        disabled: しない
+        enabled: する
 
   modules:
     inquiry: メールフォーム
@@ -19,16 +45,21 @@ ja:
       inquiry/notice: メール通知
       inquiry/reply: 自動返信メール
       inquiry/input_setting: 入力設定
+      inquiry/release_plan: 公開期間
+      inquiry/reception_plan: 回答受付期間
+      inquiry/aggregation: 集計
 
   cms:
     nodes:
       inquiry/form: フォーム
+      inquiry/node: フォーム一覧
 
   mongoid:
     attributes:
       inquiry/node/form:
         inquiry_html: 説明テキスト
         inquiry_sent_html: 送信完了テキスト
+        inquiry_results_html: 集計結果テキスト
         inquiry_captcha: 画像認証
         notice_state: 通知設定
         notice_email: 通知メールアドレス
@@ -38,6 +69,12 @@ ja:
         reply_subject: 返信件名
         reply_upper_text: 上部返信テキスト
         reply_lower_text: 下部返信テキスト
+        aggregation_state: 集計設定
+        release_date: 公開開始日
+        close_date: 公開終了日
+        reception_start_date: 回答受付開始日
+        reception_close_date: 回答受付終了日
+
       inquiry/column:
         name: 項目名
         html: 説明テキスト
@@ -47,6 +84,7 @@ ja:
         select_options: 選択肢
         required: 必須入力
         additional_attr: 追加属性
+        input_confirm: 入力確認
       inquiry/answer:
         remote_addr: IPアドレス
         user_agent: ユーザーエージェント
@@ -63,9 +101,11 @@ ja:
   tooltip:
     inquiry/addon/message:
       inquiry_html:
-        - フォームが画面の上部に表示されるフォームの説明テキストを入力します。
+        - フォーム画面の上部に表示する説明テキストを入力します。
       inquiry_sent_html:
         - 送信完了画面に表示される画面の内容を入力します。
+      inquiry_results_html:
+        - 集計結果画面の上部に表示される内容を入力します。
     inquiry/addon/captcha:
       inquiry_captcha:
         - フォームに画像認証を利用する場合は「使用する」を選択してください。
@@ -91,8 +131,10 @@ ja:
         - 自動返信メールの本文下部のテキストを設定します。
         - 署名等の記載に利用します。
     inquiry/column:
-      name: 項目名
+      name:
         - 質問項目の名称を入力します。
+      html:
+        - 項目の説明テキストを入力します。
       state:
         - 公開画面への公開、非公開を選択します。
         - 非公開を選択することで公開画面から取り下げることが可能です。
@@ -109,3 +151,28 @@ ja:
         - 項目の入力が必須か任意かを選択します。
       additional_attr:
         - 出力される入力形式のHTMLに属性を追加することが可能です。
+      input_confirm:
+        - 入力項目を二重に入力させ、入力内容を確認するかどうかを選択します。
+    inquiry/addon/release_plan:
+      release_date:
+        - 公開を開始する日時を指定します。
+        - 指定した日時が来るとメールフォームが公開されます。
+        - 即時公開する場合は指定は不要です。
+      close_date:
+        - 公開を終了する日時を指定します。
+        - 指定した日時が来るとメールフォームが非公開になります。
+    inquiry/addon/release_plan:
+      reception_start_date:
+        - 回答受付開始日時を指定します。
+        - 指定した日時が来ると回答入力フォームが公開されます。
+      reception_close_date:
+        - 回答受付終了日時を指定します。
+        - 指定した日時が来ると回答入力フォームが非公開になります。
+    inquiry/addon/aggregation:
+      aggregation_state:
+        - 公開側で集計機能を使用するかを選択します。
+
+  errors:
+    messages:
+      invalid_input_type_for_input_confirm: "は、入力形式に「%{input_type}」が選択されている場合、「する」にできません。"
+      input_confirm_not_match: "が一致しません。"

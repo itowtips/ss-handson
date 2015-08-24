@@ -9,7 +9,6 @@ ja:
       index: 連絡先グループを選択する
       search: 連絡先グループを検索
       select: 連絡先グループを設定する
-      deselect: 削除
     state:
       show: 表示
       hide: 非表示
@@ -27,7 +26,7 @@ ja:
 
   mongoid:
     attributes:
-      cms/page/model: &cmspage
+      cms/model/page: &cmspage
         contact_state: 表示設定
         contact_group_id: 所属
         contact_charge: 担当
@@ -35,6 +34,8 @@ ja:
         contact_fax: ファックス番号
         contact_email: メールアドレス
       contact/addon/group:
+        <<: *cmspage
+      contact/addon/page:
         <<: *cmspage
 
   tooltip:
@@ -44,10 +45,20 @@ ja:
       contact_group_id:
         - 連絡先に表示する担当部署を選択します。
       contact_charge:
-        - 連絡先に表示する担当者名または部署名を記述してください。
+        - 連絡先に表示する担当者名または部署名を記入します。
       contact_tel:
-        - 連絡先に表示する部署または担当者の電話番号を記述してください。
+        - 連絡先に表示する部署または担当者の電話番号を記入します。
       contact_fax:
-        - 連絡先に表示する部署のファックス番号を記述してください。
+        - 連絡先に表示する部署のファックス番号を記入します。
       contact_email:
-        - 連絡先に表示する部署または担当者のメールアドレスを記述してください。
+        - 連絡先に表示する部署または担当者のメールアドレスを記入します。
+    contact/addon/group:
+      contact_tel:
+        - グループの電話番号を記入します。
+        - ページ作成時に連絡先として自動で挿入されます。
+      contact_fax:
+        - グループのファックス番号を記入します。
+        - ページ作成時に連絡先として自動で挿入されます。
+      contact_email:
+        - グループのメールアドレスを記入します。
+        - ページ作成時に連絡先として自動で挿入されます。

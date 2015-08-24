@@ -8,12 +8,15 @@ ja:
     file_attach: 添付貼付
     image_paste: 画像貼付
 
+    errors:
+      invalid_login: ログインできませんでした。
+
   modules:
     sns: SNS
 
   mongoid:
     attributes:
-      ss/file/model: #?
+      ss/model/file: #?
         in_file: ファイル
         in_files: ファイル
         image: 画像

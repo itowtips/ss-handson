@@ -1,11 +1,17 @@
 require "open3"
 
 class Voice::MainController < ApplicationController
+  before_action :purge_pending_tasks
   before_action :check_voice_disable
   before_action :set_url
   before_action :lock_voice_file
 
   private
+    def purge_pending_tasks
+      # call #purge_pending_requests with 10% probability
+      Voice::SynthesisJob.purge_pending_tasks if Random.rand <= 0.1
+    end
+
     def check_voice_disable
       # raise "404" if SS.config.voice.disable
       if SS.config.voice.disable
@@ -89,10 +95,11 @@ class Voice::MainController < ApplicationController
 
     def send_audio_file(file)
       return unless file
-      timestamp = Fs.stat(file).mtime
+      fstat = Fs.stat(file)
 
       response.headers["Content-Type"] = "audio/mpeg"
-      response.headers["Last-Modified"] = CGI::rfc1123_date(timestamp)
+      response.headers["Content-Length"] = fstat.size
+      response.headers["Last-Modified"] = CGI::rfc1123_date(fstat.mtime)
 
       if Fs.mode == :grid_fs
         return send_data Fs.binread(file)

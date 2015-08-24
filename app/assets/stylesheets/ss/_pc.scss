@@ -1,5 +1,3 @@
-@import "ss/init";
-@include pc {
 
 // -------------------------------------------------------------------------------------------------
 // base
@@ -32,7 +30,7 @@ body {
     a {
       float: left;
       width: 148px;
-      background-image: image-url("ss/logo.png");
+      background-image: url(/assets/img/logo.png);
       background-repeat: no-repeat;
       background-position: center center;
       color: #fff;
@@ -111,7 +109,7 @@ body {
       height: 12px;
       margin: 4px;
       text-indent: -99px;
-      background-image: image-url("ss/icons.png");
+      background-image: url(/assets/img/icons.png);
       background-position:  -15px 0;
       content: " ";
     }
@@ -148,7 +146,7 @@ body {
   margin-bottom: -40px;
   padding: 0 0 50px;
   @include box-sizing(border-box);
-  background: image-url("ss/back.png") no-repeat 98% 98%;
+  background: url(/assets/img/back.png) no-repeat 98% 98%;
 }
 #navi-back, #menu-back {
   position: fixed;
@@ -412,6 +410,12 @@ table.index {
       }
     }
   }
+  .toggle {
+    cursor: pointer;
+  }
+  .padding {
+    padding-left: 12px;
+  }
 }
 table.cells, table.see {
   border: 1px solid #ccc;
@@ -503,6 +507,54 @@ table.cells, table.see {
     }
   }
 }
+.search-contents-pages {
+  @include clear;
+  background: $gray3;
+  padding: 5px 5px 10px 5px;
+  margin-bottom: 20px;
+  dl {
+    input.filename, input.name {
+      width: 20em;
+    }
+    table.index {
+      margin-top: 2px;
+      width: auto;
+      tr {
+        background-color: transparent;
+      }
+    }
+    &:nth-child(3), &:nth-child(4), &:nth-child(5), &:nth-child(6), &:nth-child(7), &:nth-child(8) {
+      clear: both;
+      @include clear;
+    }
+    float: left;
+    margin-right: 20px;
+    margin-bottom: 20px;
+  }
+  dt {
+    min-width: 110px !important;
+    position: relative;
+    top: 6px;
+    left: 6px;
+    font-weight: normal !important;
+  }
+  dd {
+    margin: 0px 0px 0px 110px !important;
+    position: relative;
+    top: 6px;
+    left: 6px;
+    max-width: 380px;
+  }
+  .cboxElement {
+    @include btn;
+    display: inline-block;
+    line-height: 1.4;
+  }
+  .search,.reset {
+    width: 80px;
+    margin-right: 20px;
+  }
+}
 .tooltip {
   display:inline-block;
   position:relative;
@@ -521,7 +573,6 @@ table.cells, table.see {
   }
   ul {
     display: none;
-    list-style-position: inside;
     position: absolute;
     bottom:18px;
     left:-220px;
@@ -529,16 +580,17 @@ table.cells, table.see {
     z-index: 90;
     padding: 10px;
     border: $border-gray3;
+    @include box-shadow(1px 1px 3px #ddd);
     background-color: #fff;
     color: $black;
     text-align: left;
     line-height: 1.6em;
-    list-style-position: inside;
-    list-style-type: disc;cursor: text;
+    list-style: none;
+    cursor: text;
     li {
-      padding-left: 1em;
+      //padding-left: 1em;
       font-weight: normal;
-      text-indent: -1em;
+      //text-indent: -1em;
     }
     &:before {
       content: "";
@@ -655,5 +707,49 @@ table.cells, table.see {
     margin-right: 10px;
   }
 }
+.mod-cms-additional-info {
+  dt {
+    width: 140px;
+  }
+  dd.value {
+    font-weight: bold;
+  }
+  dd textarea {
+    width: 70%;
+  }
+  .clear {
+    vertical-align: top;
+  }
+}
+
 // -------------------------------------------------------------------------------------------------
+// facility
+#facility-info {
+  dl.body {
+    float: left;
+    width: 540px;
+    margin-bottom: 10px;
+  }
+  .summary {
+    @include clear;
+  }
+  .images .image {
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 10px;
+  }
+  .map-pages {
+    margin-top: 10px;
+  }
+}
+#addon-facility-agents-addons-body ~ #addon-cms-agents-addons-release {
+  .mod-cms-release dt:last-of-type,dd:last-of-type {
+    display: none;
+  }
+}
+.image-thumb-size label {
+  font-weight: bold;
+  display: inline-block;
+  _display: inline;
+  margin-right: 12px;
 }

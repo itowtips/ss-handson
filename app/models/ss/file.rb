@@ -1,3 +1,4 @@
 class SS::File
-  include SS::File::Model
+  include SS::Model::File
+  include SS::Relation::Thumb
 end

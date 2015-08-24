@@ -3,8 +3,11 @@ module Cms::BaseFilter
   include SS::BaseFilter
 
   included do
+    cattr_accessor(:user_class) { Cms::User }
+
     helper Cms::NodeHelper
     helper Cms::FormHelper
+    helper Cms::PathHelper
     before_action :set_site
     before_action :set_node
     before_action :set_group
@@ -13,8 +16,8 @@ module Cms::BaseFilter
 
   private
     def set_site
-      @cur_site = SS::Site.find_by host: params[:site]
-      @crumbs << [@cur_site.name, cms_main_path]
+      @cur_site = Cms::Site.find_by host: params[:site]
+      @crumbs << [@cur_site.name, cms_contents_path]
     end
 
     def set_node
@@ -25,7 +28,7 @@ module Cms::BaseFilter
     end
 
     def set_group
-      cur_groups = @cur_user.groups.in(name: @cur_site.groups.pluck(:name).map{ |name| /^#{name}(\/|$)/ })
+      cur_groups = @cur_user.groups.in(name: @cur_site.groups.pluck(:name).map{ |name| /^#{Regexp.escape(name)}(\/|$)/ })
       @cur_group = cur_groups.first # select one group
       raise "403" unless @cur_group
     end

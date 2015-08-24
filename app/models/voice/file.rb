@@ -7,7 +7,7 @@ class Voice::File
   extend SS::Translation
   include SS::Document
   include SS::Reference::Site
-  include Cms::Permission
+  include Cms::SitePermission
   include Voice::Downloadable
   include Voice::Lockable
 
@@ -47,7 +47,8 @@ class Voice::File
   class << self
     public
       def root
-        File.expand_path(SS.config.voice.root, Rails.root)
+        return test_root if Rails.env.test?
+        ::File.join(Rails.root, "private", "files")
       end
 
       def save_term_options
@@ -57,6 +58,15 @@ class Voice::File
           [I18n.t(:"history.save_term.year"), "year"],
           [I18n.t(:"history.save_term.all_save"), "all_save"],
         ]
+      end
+
+    private
+      def test_root
+        prefix = "voice"
+        timestamp = Time.zone.now.strftime("%Y%m%d")
+        tmp = ::File.join(Dir.tmpdir, "#{prefix}-#{timestamp}")
+        ::Dir.mkdir(tmp) unless ::Dir.exists?(tmp)
+        tmp
       end
   end
 
@@ -153,7 +163,7 @@ class Voice::File
     end
 
     def fresh?(margin)
-      elapsed = Time.now - Fs.stat(file).mtime
+      elapsed = Time.zone.now - Fs.stat(file).mtime
       elapsed < margin
     end
 end

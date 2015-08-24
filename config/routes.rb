@@ -40,15 +40,11 @@ SS::Application.routes.draw do
 
   SS::Initializer
 
-  namespace "fs" do
-    get ":id/:filename" => "files#index", as: :file
-    get ":id/thumb/:filename" => "files#thumb", as: :thumb
-  end
-
   namespace "sns", path: ".mypage" do
     get   "/"      => "mypage#index", as: :mypage
     get   "logout" => "login#logout", as: :logout
     match "login"  => "login#login", as: :login, via: [:get, :post]
+    match "remote_login" => "login#remote_login", as: :remote_login, via: [:get, :post]
     get   "auth_token" => "auth_token#index", as: :auth_token
   end
 

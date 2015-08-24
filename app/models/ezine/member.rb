@@ -2,8 +2,9 @@ class Ezine::Member
   include SS::Document
   include SS::Reference::User
   include SS::Reference::Site
-  include Cms::Permission
+  include Cms::SitePermission
   include Ezine::MemberSearchable
+  include Ezine::Addon::Data
 
   field :email, type: String, metadata: { from: :email }
   field :email_type, type: String
@@ -21,11 +22,17 @@ class Ezine::Member
 
   public
     def email_type_options
-      [%w(テキスト版 text), %w(HTML版 html)]
+      [
+        [I18n.t('ezine.options.email_type.text'), 'text'],
+        [I18n.t('ezine.options.email_type.html'), 'html'],
+      ]
     end
 
     def state_options
-      [%w(配信する enabled), %w(配信しない disabled)]
+      [
+        [I18n.t('ezine.options.delivery_state.enabled'), 'enabled'],
+        [I18n.t('ezine.options.delivery_state.disabled'), 'disabled'],
+      ]
     end
 
     def test_member?

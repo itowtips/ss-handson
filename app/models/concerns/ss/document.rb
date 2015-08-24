@@ -3,6 +3,7 @@ module SS::Document
   extend SS::Translation
   include Mongoid::Document
   include SS::Fields::Sequencer
+  include SS::Fields::Normalizer
 
   attr_accessor :in_updated
 
@@ -10,8 +11,8 @@ module SS::Document
     class_variable_set(:@@_permit_params, [])
     class_variable_set(:@@_text_index_fields, [])
 
-    field :created, type: DateTime, default: -> { Time.now }
-    field :updated, type: DateTime, default: -> { Time.now }
+    field :created, type: DateTime, default: -> { Time.zone.now }
+    field :updated, type: DateTime, default: -> { created }
     field :text_index, type: String
 
     validate :validate_updated, if: -> { in_updated.present? }
@@ -20,7 +21,7 @@ module SS::Document
     before_save :set_text_index
 
     scope :keyword_in, ->(words, *fields) {
-      words = words.split(/[\s　]+/).uniq.compact.map { |w| /\Q#{w}\E/i } if words.is_a?(String)
+      words = words.split(/[\s　]+/).uniq.compact.map { |w| /#{Regexp.escape(w)}/i } if words.is_a?(String)
       words = words[0..4]
       cond  = words.map do |word|
         { "$or" => fields.map { |field| { field => word } } }
@@ -29,7 +30,7 @@ module SS::Document
     }
 
     scope :search_text, ->(words) {
-      words = words.split(/[\s　]+/).uniq.compact.map { |w| /\Q#{w}\E/i } if words.is_a?(String)
+      words = words.split(/[\s　]+/).uniq.compact.map { |w| /#{Regexp.escape(w)}/i } if words.is_a?(String)
       if self.class_variable_get(:@@_text_index_fields).present?
         all_in text_index: words
       else
@@ -52,7 +53,7 @@ module SS::Document
       end
       return msg if msg.blank? || !html_wrap
       msg = [msg] if msg.class.to_s == "String"
-      list = msg.map {|d| "<li>" + d.gsub(/\r\n|\n/, "<br />") + "</li>"}
+      list = msg.map {|d| "<li>" + d.to_s.gsub(/\r\n|\n/, "<br />") + "<br /></li>"}
 
       h  = []
       h << %(<div class="tooltip">?)
@@ -95,7 +96,7 @@ module SS::Document
 
     def addons
       #return @addons if @addons
-      @addons = lookup_addons.sort {|a, b| a.order <=> b.order }.map {|m| m.addon_name }
+      @addons = lookup_addons.reverse.map { |m| m.addon_name }
     end
 
     def lookup_addons
@@ -117,6 +118,59 @@ module SS::Document
       end
 
       class_variable_set(:@@_text_index_fields, fields)
+    end
+
+    # Mongoid では find_in_batches が存在しない。
+    # find_in_batches のエミュレーションを提供する。
+    #
+    # ActiveRecord の find_in_batches と異なる点がある。
+    #
+    # ActiveRecord の find_in_batches では、start オプションを取るが、本メソッドは offset オプションを取る。
+    # start オプションは主キーを取るが、offset オプションは読み飛ばすレコード数を取る。
+    #
+    # ActiveRecord の find_in_batches では、order_by が無効になるが、本メソッドでは order_by が有効である。
+    #
+    # @return [Enumerator<Array<self.class>>]
+    def find_in_batches(options = {})
+      unless block_given?
+        return to_enum(:find_in_batches, options)
+      end
+
+      batch_size = options[:batch_size] || 1000
+      offset = options[:offset] || 0
+      records = self.limit(batch_size).skip(offset).to_a
+      while records.any?
+        records_size = records.size
+        with_scope(Mongoid::Criteria.new(self)) do
+          yield records
+        end
+        break if records_size < batch_size
+        offset += batch_size
+        records = self.limit(batch_size).skip(offset).to_a
+      end
+    end
+
+    # Mongoid では find_each が存在しない。
+    # find_each のエミュレーションを提供する。
+    #
+    # ActiveRecord の find_in_batches と異なる点がある。
+    #
+    # ActiveRecord の find_in_batches では、start オプションを取るが、本メソッドは offset オプションを取る。
+    # start オプションは主キーを取るが、offset オプションは読み飛ばすレコード数を取る。
+    #
+    # ActiveRecord の find_in_batches では、order_by が無効になるが、本メソッドでは order_by が有効である。
+    #
+    # @return [Enumerator<self.class>]
+    def find_each(options = {})
+      unless block_given?
+        return to_enum(:find_each, options)
+      end
+
+      find_in_batches(options) do |records|
+        records.each do |record|
+          yield record
+        end
+      end
     end
   end
 
@@ -152,7 +206,7 @@ module SS::Document
 
     def set_updated
       return true if !changed?
-      self.updated = Time.now
+      self.updated = Time.zone.now
     end
 
     def set_text_index

@@ -7,6 +7,9 @@ ja:
     deliver_test: テスト配信
     deliver: 本配信
     sent_log: 配信ログ
+    column: 登録項目
+    required_field: 必須項目
+
     button:
       convert_html_to_text: HTML版を変換する
       deliver: 本配信
@@ -15,9 +18,22 @@ ja:
       add: 配信登録
       update: 配信形式の変更
       delete: 配信停止
+    messages:
+      confirm_addr: |-
+        メールマガジンの%{type}を受け付けました。
+        確認メールが届きますので、リンクをクリックしてください。
+      verify_addr:
+        メールアドレスの確認を完了しました。
     notice:
       delivered: 配信を開始しました
       delivered_test: テスト配信を完了しました
+    options:
+      delivery_state:
+        enabled: 配信する
+        disabled: 配信しない
+      email_type:
+        text: テキスト版
+        html: HTML版
     state:
       enabled: 配信する
       disabled: 配信しない
@@ -25,10 +41,13 @@ ja:
   modules:
     ezine: メールマガジン
     addons:
-      ezine/page/body: 本文
+      ezine/body: 本文
       ezine/signature: 署名
       ezine/sender_address: 送信者設定
       ezine/reply: 確認メール
+      ezine/data: 登録情報
+      ezine/column_setting: 入力設定
+      ezine/deliver_plan: 配信予約
 
   cms:
     nodes:
@@ -38,19 +57,26 @@ ja:
   mongoid:
     attributes:
       ezine/node/page:
+        column_ids: カラム
+      ezine/addon/signature:
         signature_html: 署名（HTML版）
         signature_text: 署名（テキスト版）
+      ezine/addon/sender_address:
         sender_name: 送信者名
         sender_email: 送信メールアドレス
+      ezine/addon/reply:
         reply_upper_text: 上部確認テキスト
         reply_lower_text: 下部確認テキスト
         reply_signature: 署名
       ezine/page:
         name: 記事タイトル
-        html: 本文（HTML版）
-        text: 本文（テキスト版）
         test_delivered: テスト配信完了日時
         results: 配信開始日時
+      ezine/addon/body:
+        html: 本文（HTML版）
+        text: 本文（テキスト版）
+      ezine/addon/deliver_plan:
+        deliver_date: 配信予約日時
       ezine/member:
         email: メールアドレス
         email_type: 配信形式
@@ -65,3 +91,36 @@ ja:
       ezine/sent_log:
         email: メールアドレス
         created: 配信日時
+      ezine/column:
+        name: 項目名
+        html: 説明テキスト
+        state: ステータス
+        order: 並び順
+        input_type: 入力形式
+        select_options: 選択肢
+        required: 必須入力
+        additional_attr: 追加属性
+        input_confirm: 入力確認
+
+  tooltip:
+    ezine/addon/signature:
+      signature_html:
+        - HTML版メールマガジンに記載する署名を入力します。
+      signature_text:
+        - テキスト版メールマガジンに記載する署名を入力します。
+    ezine/addon/sender_address:
+      sender_name:
+        - メールマガジンの送信者名を記載します。
+      sender_email:
+        - メールマガジンの送信者名に利用するメールアドレスを記載します。
+    ezine/addon/reply:
+      reply_upper_text:
+        - 登録確認の自動返信メールの上部に記載するテキストを入力します。
+      reply_lower_text:
+        - 登録確認の自動返信メールの下部に記載するテキストを入力します。
+      reply_signature:
+        - 登録確認の自動返信メールに記載する署名を入力します。
+    ezine/addon/deliver_plan:
+      deliver_date:
+        - 配信予約日時を設定します。
+        - 指定した日時が来ると配信を行います。

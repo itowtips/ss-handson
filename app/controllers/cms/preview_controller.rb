@@ -19,7 +19,7 @@ class Cms::PreviewController < ApplicationController
       @cur_path.sub!(/^#{cms_preview_path}(\d+)?/, "")
       @cur_path = "index.html" if @cur_path.blank?
       @cur_path = URI.decode(@cur_path)
-      @cur_date = params[:preview_date].present? ? Time.parse(params[:preview_date]) : Time.now
+      @cur_date = params[:preview_date].present? ? params[:preview_date].in_time_zone : Time.zone.now
     end
 
     def x_sendfile(file = @file)
@@ -31,22 +31,29 @@ class Cms::PreviewController < ApplicationController
       if @cur_path =~ /^\/fs\//
         path = @cur_path.sub("/thumb/", "/")
         filename = ::File.basename(path)
-        id = ::File.basename ::File.dirname(path)
+        id = ::File.dirname(path).sub("/fs/", "").sub("/_", "").gsub("/", "")
         @item = SS::File.find_by id: id, filename: filename
 
         if @cur_path =~ /\/thumb\//
-          width  = params[:width]
-          height = params[:height]
+          if @item.thumb
+            @item = @item.thumb
+          else
+            @thumb_width  = params[:width]
+            @thumb_height = params[:height]
+          end
+        end
 
-          send_thumb @item.read, type: @item.content_type, filename: @item.filename, disposition: :inline,
-            width: width, height: height
+        if @thumb_width && @thumb_height
+          send_thumb @item.read, type: @item.content_type, filename: @item.filename,
+            disposition: :inline, width: @thumb_width, height: @thumb_height
           return
         else
-          send_data @item.read, type: @item.content_type, filename: @item.filename, disposition: :inline
+          send_file @item.path, type: @item.content_type, filename: @item.filename,
+            disposition: :inline, x_sendfile: true
           return
         end
       end
-      raise "404" unless Fs.exists?(file)
+      #raise "404" unless Fs.exists?(file)
     end
 
     def render_preview
@@ -64,14 +71,24 @@ class Cms::PreviewController < ApplicationController
         end
       end
 
+      s = []
+      s << '$(function(){'
+      s << 'SS_Preview.mobile_path = "' + SS.config.mobile.location + '";'
+      s << 'SS_Preview.render();'
+      s << '});'
+
       h  = []
       h << view_context.stylesheet_link_tag("cms/preview")
-      h << view_context.javascript_include_tag("cms/preview")
       h << '<link href="/assets/css/datetimepicker/jquery.datetimepicker.css" rel="stylesheet" />'
+      h << '<link href="/assets/css/colorbox/colorbox.css" rel="stylesheet" />'
+      h << '<script src="/assets/cms/public.js"></script>'
       h << '<script src="/assets/js/jquery.datetimepicker.js"></script>'
+      h << '<script src="/assets/js/jquery.colorbox.js"></script>'
+      h << '<script>' + s.join + '</script>'
       h << '<div id="ss-preview">'
       h << '<input type="text" class="date" value="' + @cur_date.strftime("%Y/%m/%d %H:%M") + '" />'
-      h << '<input type="button" class="preview" value="Preview">'
+      h << '<input type="button" class="preview" value="' + t("views.links.pc") + '">'
+      h << '<input type="button" class="mobile" value=' + t("views.links.mobile") + '>'
       h << '</div>'
 
       body.sub!("</body>", h.join("\n") + "</body>")

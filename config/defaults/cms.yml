@@ -1,0 +1,30 @@
+# cms
+
+production: &production
+  # Static files
+  serve_static_pages: true
+
+  # HTML editor (ckeditor, tinymce, markdown)
+  html_editor: ckeditor
+
+  # Link Check Ajax URL
+  link_check_url: /.cms/link_check/check.json
+
+  # Correct Page's HTML When Saving
+  auto_correct_page_html: false
+
+  # Google Map API Center Location
+  map_center:
+    - 36.204824
+    - 138.252924
+
+  editor_template_thumb: "/assets/img/editor-template.png"
+
+  # Max Number of Markers in Map Addon
+  map_max_point_form: 10
+
+test:
+  <<: *production
+
+development:
+  <<: *production

@@ -15,6 +15,7 @@ describe Cms::User do
         expect(model.where(email: subject[:email]).first).not_to be_nil
         # uid can be nil if email.presents
         expect(model.where(email: subject[:email]).first.uid).to be_nil
+        expect(model.where(email: subject[:email]).first.has_attribute?(:uid)).to be_falsey
       end
     end
 
@@ -25,6 +26,7 @@ describe Cms::User do
         expect(model.where(uid: subject[:uid]).first).not_to be_nil
         # email can be nil if uid.presents
         expect(model.where(uid: subject[:uid]).first.email).to be_nil
+        expect(model.where(uid: subject[:uid]).first.has_attribute?(:email)).to be_falsey
       end
     end
 
@@ -46,5 +48,14 @@ describe Cms::User do
       subject { create(:cms_user_base, :cms_user_rand_name, :cms_user_uid, group: group1) }
       it { expect(subject.long_name).to eq "#{subject.name}(#{subject.uid})" }
     end
+  end
+
+  context "shirasagi-424" do
+    let(:role1) { create(:cms_user_role, name: unique_id) }
+    let(:role2) { create(:cms_user_role, name: unique_id) }
+    subject { create(:cms_user_base, :cms_user_rand_name, :cms_user_email, group: group1, cms_role_ids: [ role1.id, role2.id ]) }
+
+    its(:cms_role_permissions) { is_expected.to be_a(Hash) }
+    its(:cms_role_permissions) { is_expected.to include("edit_private_article_pages_#{cms_site.id}" => 1) }
   end
 end

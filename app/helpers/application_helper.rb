@@ -36,18 +36,28 @@ module ApplicationHelper
     super *args
   end
 
+  def url_for(*args)
+    url = super
+    if SS::MobileSupport.mobile?(request)
+      url = SS::MobileSupport.embed_mobile_path(request, url)
+    end
+    url
+  end
+
   def jquery(&block)
     javascript_tag do
       "$(function() {\n#{capture(&block)}\n});".html_safe
     end
   end
 
+  # @deprecated
   def coffee(&block)
     javascript_tag do
       CoffeeScript.compile(capture(&block)).html_safe
     end
   end
 
+  # @deprecated
   def scss(&block)
     opts = Rails.application.config.sass
     sass = Sass::Engine.new "@import 'compass/css3';\n" + capture(&block),
@@ -83,11 +93,20 @@ module ApplicationHelper
     controller.render_agent(controller_name, action).body.html_safe
   end
 
-  def mail_to_entity(email_address, name = nil, html_options = {})
-    return "" if email_address.blank?
-    email_address = email_address.gsub(/@/, "&#64;").gsub(/\./, "&#46;").html_safe
-    name = email_address if name.blank?
-    mail_to(email_address, name, html_options).html_safe
+  def mail_to_entity(email_address, name = nil, html_options = {}, &block)
+    html_options, name = name, nil if block_given?
+    html_options = (html_options || {}).stringify_keys
+
+    extras = %w(cc bcc body subject).map! do |item|
+      option = html_options.delete(item) || next
+      "#{item}=#{Rack::Utils.escape_path(option)}"
+    end.compact
+    extras = extras.empty? ? '' : '?' + extras.join('&')
+
+    email_address = email_address.gsub(/@/, "&#64;").gsub(/\./, "&#46;").html_safe if email_address.present?
+    html_options["href"] = "mailto:#{email_address}#{extras}".html_safe
+
+    content_tag(:a, name || email_address, html_options, &block)
   end
 
 end

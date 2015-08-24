@@ -1,7 +1,7 @@
 ja:
   category:
-    node: カテゴリー
     name: カテゴリー名
+    node: カテゴリー
     setting: カテゴリー設定
 
   modules:
@@ -19,6 +19,11 @@ ja:
 
   mongoid:
     attributes:
-      cms/page/model:
+      cms/model/page:
         st_categories: カテゴリー
         st_category_ids: カテゴリー
+
+  tooltip:
+    category/addon/category:
+      categories:
+        - 表示するカテゴリーページの名称にチェックを入れます。

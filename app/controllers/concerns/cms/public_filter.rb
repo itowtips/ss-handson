@@ -29,11 +29,11 @@ module Cms::PublicFilter
         raise "404" unless part
         @cur_path = params[:ref] || "/"
         send_part render_part(part)
-      elsif page = find_page(@html)
-        self.response = render_page page
+      elsif page = find_page(@cur_path)
+        self.response = render_page(page)
         send_page page
-      elsif node = find_node(@html)
-        self.response = render_node node
+      elsif node = find_node(@cur_path)
+        self.response = render_node(node)
         send_page node
       else
         raise "404"
@@ -42,13 +42,15 @@ module Cms::PublicFilter
 
   private
     def set_site
-      host = request.env["HTTP_X_FORWARDED_HOST"] || request.env["HTTP_HOST"]
-      @cur_site ||= SS::Site.find_by_domain host
+      @cur_site ||= begin
+        host = request.env["HTTP_X_FORWARDED_HOST"] || request.env["HTTP_HOST"] || request.host_with_port
+        request.env["ss.site"] = SS::Site.find_by_domain host
+      end
       raise "404" if !@cur_site
     end
 
     def set_request_path
-      @cur_path ||= request.env["REQUEST_PATH"]
+      @cur_path ||= request.env["REQUEST_PATH"] || request.path
       cur_path = @cur_path.dup
 
       filter_methods = self.class.private_instance_methods.select { |m| m =~ /^set_request_path_with_/ }
@@ -106,10 +108,11 @@ module Cms::PublicFilter
       response.headers["Expires"] = 1.days.from_now.httpdate if file =~ /\.(css|js|gif|jpg|png)$/
       response.headers["Last-Modified"] = CGI::rfc1123_date(Fs.stat(file).mtime)
 
-      if Fs.mode == :grid_fs
-        return send_data Fs.binread(file), type: Fs.content_type(file)
+      if Fs.mode == :file
+        send_file file, disposition: :inline, x_sendfile: true
+      else
+        send_data Fs.binread(file), type: Fs.content_type(file)
       end
-      send_file file, disposition: :inline, x_sendfile: true
     end
 
     def send_part(body)

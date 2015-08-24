@@ -1,37 +1,58 @@
 module Facility::Node
   class Base
-    include Cms::Node::Model
+    include Cms::Model::Node
+    include Cms::Addon::NodeSetting
 
     default_scope ->{ where(route: /^facility\//) }
   end
 
   class Node
-    include Cms::Node::Model
+    include Cms::Model::Node
+    include Cms::Addon::NodeSetting
+    include Cms::Addon::Meta
     include Cms::Addon::NodeList
     include Facility::Addon::CategorySetting
     include Facility::Addon::ServiceSetting
     include Facility::Addon::LocationSetting
+    include Cms::Addon::Release
+    include Cms::Addon::GroupPermission
+    include History::Addon::Backup
 
     default_scope ->{ where(route: "facility/node") }
   end
 
   class Page
-    include Cms::Node::Model
+    include Cms::Model::Node
+    include Cms::Addon::NodeSetting
+    include Cms::Addon::Meta
     include Facility::Addon::Body
-    include Facility::Addon::AdditionalInfo
+    include Cms::Addon::AdditionalInfo
     include Facility::Addon::Category
     include Facility::Addon::Service
     include Facility::Addon::Location
+    include Cms::Addon::Release
+    include Cms::Addon::GroupPermission
+    include History::Addon::Backup
 
     default_scope ->{ where(route: "facility/page") }
+
+    def serve_static_file?
+      false
+    end
   end
 
   class Search
-    include Cms::Node::Model
-    include Cms::Addon::NodeList
+    include Cms::Model::Node
+    include Cms::Addon::NodeSetting
+    include Cms::Addon::Meta
     include Facility::Addon::CategorySetting
     include Facility::Addon::ServiceSetting
     include Facility::Addon::LocationSetting
+    include Facility::Addon::SearchSetting
+    include Facility::Addon::SearchResult
+    include Cms::Addon::Release
+    include Cms::Addon::GroupPermission
+    include History::Addon::Backup
 
     default_scope ->{ where(route: "facility/search") }
 
@@ -51,9 +72,14 @@ module Facility::Node
   end
 
   class Category
-    include Cms::Node::Model
+    include Cms::Model::Node
+    include Cms::Addon::NodeSetting
+    include Cms::Addon::Meta
     include Cms::Addon::NodeList
-    include Facility::Addon::PointerImage
+    include Facility::Addon::Image
+    include Cms::Addon::Release
+    include Cms::Addon::GroupPermission
+    include History::Addon::Backup
 
     default_scope ->{ where(route: "facility/category") }
 
@@ -76,8 +102,13 @@ module Facility::Node
   end
 
   class Service
-    include Cms::Node::Model
+    include Cms::Model::Node
+    include Cms::Addon::NodeSetting
+    include Cms::Addon::Meta
     include Cms::Addon::NodeList
+    include Cms::Addon::Release
+    include Cms::Addon::GroupPermission
+    include History::Addon::Backup
 
     default_scope ->{ where(route: "facility/service") }
 
@@ -100,8 +131,14 @@ module Facility::Node
   end
 
   class Location
-    include Cms::Node::Model
+    include Cms::Model::Node
+    include Cms::Addon::NodeSetting
+    include Cms::Addon::Meta
     include Cms::Addon::NodeList
+    include Facility::Addon::FocusSetting
+    include Cms::Addon::Release
+    include Cms::Addon::GroupPermission
+    include History::Addon::Backup
 
     default_scope ->{ where(route: "facility/location") }
 

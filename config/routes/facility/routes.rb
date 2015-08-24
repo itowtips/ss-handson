@@ -6,9 +6,18 @@ SS::Application.routes.draw do
     get :delete, on: :member
   end
 
+  concern :download do
+    get :download, :on => :collection
+  end
+
+  concern :import do
+    get :import, :on => :collection
+    post :import, :on => :collection
+  end
+
   content "facility" do
     get "/" => redirect { |p, req| "#{req.path}/searches" }, as: :main
-    resources :pages, concerns: :deletion
+    resources :pages, concerns: [:deletion, :download, :import]
     resources :nodes, concerns: :deletion
     resources :searches, concerns: :deletion
     resources :services, concerns: :deletion
@@ -46,11 +55,13 @@ SS::Application.routes.draw do
   end
 
   namespace "facility", path: ".u:user/facility", module: "facility", servicer: /\d+/ do
-    resources :temp_files, concerns: :deletion do
-      get :select, on: :member
-      get :view, on: :member
-      get :thumb, on: :member
-      get :download, on: :member
+    namespace "apis" do
+      resources :temp_files, concerns: :deletion do
+        get :select, on: :member
+        get :view, on: :member
+        get :thumb, on: :member
+        get :download, on: :member
+      end
     end
   end
 end

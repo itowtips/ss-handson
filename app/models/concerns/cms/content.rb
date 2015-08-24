@@ -4,9 +4,10 @@ module Cms::Content
   include SS::Document
   include SS::Reference::User
   include SS::Reference::Site
-  include Cms::Addon::OwnerPermission
+  include Cms::GroupPermission
 
   attr_accessor :cur_node, :basename
+  attr_accessor :serve_static_relation_files
 
   included do
     seqid :id
@@ -112,11 +113,14 @@ module Cms::Content
     end
 
     def state_options
-      [%w(公開 public), %w(非公開 closed)]
+      [
+        [I18n.t('views.options.state.public'), 'public'],
+        [I18n.t('views.options.state.closed'), 'closed'],
+      ]
     end
 
     def state_private_options
-      [%w(公開待ち ready)]
+      [[I18n.t('views.options.state.ready'), 'ready']]
     end
 
     def status
@@ -147,6 +151,12 @@ module Cms::Content
 
     def serve_static_file?
       SS.config.cms.serve_static_pages
+    end
+
+    def serve_static_relation_files?
+      return false unless serve_static_file?
+      return true if @serve_static_relation_files.nil?
+      @serve_static_relation_files == true
     end
 
   private

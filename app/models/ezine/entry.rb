@@ -2,6 +2,7 @@ class Ezine::Entry
   include SS::Document
   include SS::Reference::Site
   include Ezine::Entryable
+  include Ezine::Addon::Data
 
   validates :email, presence: true, email: true
   validates :email_type, inclusion: { in: %w(text html) }
@@ -9,7 +10,7 @@ class Ezine::Entry
 
   before_create ->{ self.verification_token = unique_token },
     if: ->{ SS.config.ezine.deliver_verification_mail_from_here }
-  after_create ->{ Ezine::Mailer.verification_mail(self).deliver },
+  after_create ->{ Ezine::Mailer.verification_mail(self).deliver_now },
     if: ->{ SS.config.ezine.deliver_verification_mail_from_here }
 
   class << self
@@ -28,7 +29,10 @@ class Ezine::Entry
 
   public
     def email_type_options
-      [%w(テキスト版 text), %w(HTML版 html)]
+      [
+        [I18n.t('ezine.options.email_type.text'), 'text'],
+        [I18n.t('ezine.options.email_type.html'), 'html'],
+      ]
     end
 
     # Verify an entry.
@@ -76,11 +80,12 @@ class Ezine::Entry
           site_id: site_id,
           node_id: node_id,
           email: email,
-          email_type: email_type
+          email_type: email_type,
+          data: data
         )
       when "update"
         return if member.nil?
-        member.update email_type: email_type
+        member.update(email_type: email_type, data: data)
       when "delete"
         return if member.nil?
         member.destroy

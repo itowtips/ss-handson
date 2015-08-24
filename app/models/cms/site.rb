@@ -1,6 +1,7 @@
 class Cms::Site
-  include SS::Site::Model
-  include Cms::Permission
+  include SS::Model::Site
+  include Cms::SitePermission
+  include Cms::Addon::PageSetting
 
   set_permission_name "cms_sites"
 end

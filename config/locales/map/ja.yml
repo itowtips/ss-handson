@@ -8,10 +8,14 @@ ja:
     setting: マップ設定
     markers: マーカー設定
     clicked: クリック座標
+    alert:
+      invalid_center: 座標を取得できませんでした。
     button:
       set_marker: マーカーの設置
       add_marker: マーカーを追加する
       clear_marker: 削除
+    confirm:
+      delete_marker: マーカーを削除してよろしいですか？
 
   modules:
     map: 地図
@@ -20,7 +24,7 @@ ja:
 
   mongoid:
     attributes:
-      cms/page/model:
+      cms/model/page:
         map_loc: 緯度,経度
         map_zoom: 縮尺
         marker_name: マーカー名
@@ -30,7 +34,7 @@ ja:
   tooltip:
     map/addon/page:
       map_points:
-        - 地図内に表示するマーカーを設定できます。
-        - 地図をクリックし「マーカーの位置を設定」を選択することでマーカーを地図上に配置します。
-        - 説明にはマーカーの吹き出しテキストを入力できます。
+        - 地図内に表示するマーカーを設定します。
+        - 地図をクリックし「マーカーの設定」を選択することでマーカーを地図上に配置します。
+        - マーカー名、説明にはマーカーの吹き出しテキストを入力します。
         - 「マーカーを追加する」を選択することで複数のマーカーを設定することが可能です。

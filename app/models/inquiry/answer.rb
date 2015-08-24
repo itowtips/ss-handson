@@ -18,11 +18,19 @@ class Inquiry::Answer
   validate :validate_data
 
   public
-    def set_data(hash={})
+    def set_data(hash = {})
       self.data = []
-      hash.each do |key, value|
-        value = value.kind_of?(Hash) ? value.map {|k, v| v}.join("\n") : value.to_s
-        self.data << Inquiry::Answer::Data.new(column_id: key.to_i, value: value)
+      hash.each do |key, data|
+        value, confirm = data
+        if value.kind_of?(Hash)
+          values = value.values
+          value  = value.map {|k, v| v}.join("\n")
+        else
+          values = [value.to_s]
+          value  = value.to_s
+        end
+
+        self.data << Inquiry::Answer::Data.new(column_id: key.to_i, value: value, values: values, confirm: confirm)
       end
     end
 
@@ -42,6 +50,12 @@ class Inquiry::Answer
           required_data = data.select { |d| column.id == d.column_id }.shift
           if required_data.blank? || required_data.value.blank?
             errors.add :base, "#{column.name}#{I18n.t('errors.messages.blank')}"
+          end
+        end
+        if column.input_confirm == "enabled"
+          required_data = data.select { |d| column.id == d.column_id }.shift
+          if required_data.present? && required_data.value != required_data.confirm
+            errors.add :base, "#{column.name}#{I18n.t('errors.messages.input_confirm_not_match')}"
           end
         end
       end

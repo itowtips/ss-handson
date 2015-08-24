@@ -63,9 +63,11 @@ role2 = save_cms_role name: "記事編集権限", permission_level: 1,
 @sys_user = SS::User.where(email: "sys@example.jp").first
 if @sys_user
   @sys_user.add_to_set group_ids: g1_00.id
-  @sys_user.add_to_set cms_role_ids: role1.id
   @sys_user.uid = "sys"
   @sys_user.save!
+
+  @cms_user = Cms::User.find @sys_user.id
+  @cms_user.add_to_set cms_role_ids: role1.id
 end
 
 ## -------------------------------------
@@ -87,8 +89,9 @@ def save_user(data)
   item.update data
 
   item.add_to_set group_ids: group_ids
-  item.add_to_set cms_role_ids: cms_role_ids
-  item.update
+
+  cms_user = Cms::User.find item.id
+  cms_user.add_to_set cms_role_ids: cms_role_ids
 
   item
 end
@@ -99,6 +102,27 @@ end
   group_ids: [g1_11.id, g1_21.id], cms_role_ids: [role2.id], uid: "user1"
 @user2 = save_user name: "一般ユーザー2", email: "user2@example.jp", password: "pass",
   group_ids: [g1_22.id], cms_role_ids: [role2.id], uid: "user2"
+
+## -------------------------------------
+puts "# workflow"
+
+def save_workflow_route(data)
+  puts data[:name]
+  item = Workflow::Route.new
+  item.attributes = data
+  raise item.errors.full_messages.to_s unless item.save
+
+  item
+end
+
+approvers = Workflow::Extensions::Route::Approvers.new(
+  [ { level: 1, user_id: @user1.id }, { level: 2, user_id: @admin.id } ]
+)
+required_counts = Workflow::Extensions::Route::RequiredCounts.new(
+  [ false, false, false, false, false ]
+)
+save_workflow_route name: "多段承認", group_ids: [g1_00.id],
+  approvers: approvers, required_counts: required_counts
 
 ## -------------------------------------
 puts "# nodes"

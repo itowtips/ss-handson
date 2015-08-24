@@ -24,23 +24,25 @@ ja:
 
   mongoid:
     attributes:
-      cms/page/model:
+      cms/model/page:
         question: 質問
         answer: 回答
       faq/part/search:
         search_node: 検索フォルダー
 
   cms_role:
-    read_other_faq_pages: FAQページ閲覧（全て）
-    read_private_faq_pages: FAQページ閲覧（所有）
-    edit_other_faq_pages: FAQページ編集（全て）
-    edit_private_faq_pages: FAQページ編集（所有）
-    delete_other_faq_pages: FAQページ削除（全て）
-    delete_private_faq_pages: FAQページ削除（所有）
+    read_other_faq_pages: FAQページの閲覧（全て）
+    read_private_faq_pages: FAQページの閲覧（所有）
+    edit_other_faq_pages: FAQページの編集（全て）
+    edit_private_faq_pages: FAQページの編集（所有）
+    delete_other_faq_pages: FAQページの削除（全て）
+    delete_private_faq_pages: FAQページの削除（所有）
     move_other_faq_pages: FAQページの移動（全て）
     move_private_faq_pages: FAQページの移動（所有）
+    unlock_other_faq_pages: FAQページのロック解除（全て）
 
   tooltip:
     faq/part/search:
       search_node:
-        - 検索先のフォルダーを設定します
+        - 検索先のフォルダーを設定します。
+        - 未入力の場合は自フォルダーを対象にします。

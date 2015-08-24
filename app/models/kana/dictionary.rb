@@ -2,16 +2,18 @@ class Kana::Dictionary
   extend SS::Translation
   include SS::Document
   include SS::Reference::Site
-  include Cms::Permission
+  include Cms::SitePermission
 
   # field separator
-  FS = %w(, 、 ，)
+  FS = %w(, 、 ，).freeze
 
   # default cost
-  DEFAULT_COST = 10
+  DEFAULT_COST = 10.freeze
 
   # default part-of-speech
-  DEFAULT_POS = %w(名詞 固有名詞 一般 *)
+  DEFAULT_POS = %w(名詞 固有名詞 一般 *).freeze
+
+  DEFAULT_MASTER_ROOT = Rails.root.join("private", "files", "kana_dictionaries").to_s.freeze
 
   seqid :id
   field :name, type: String
@@ -38,7 +40,7 @@ class Kana::Dictionary
     class << self
       public
         def master_root
-          ::File.join(SS.config.kana.root, "private", "files", "kana_dictionaries")
+          SS.config.kana.root || DEFAULT_MASTER_ROOT
         end
 
         def master_dic(site_id)
@@ -105,7 +107,7 @@ class Kana::Dictionary
 
         def make_tmpname(suffix)
           # blow code come from Tmpname::make_tmpname
-          "mecab#{Time.now.strftime("%Y%m%d")}-#{$PID}-#{rand(0x100000000).to_s(36)}#{suffix}"
+          "mecab#{Time.zone.now.strftime("%Y%m%d")}-#{$PID}-#{rand(0x100000000).to_s(36)}#{suffix}"
         end
 
         def build_source(criteria, output_file)

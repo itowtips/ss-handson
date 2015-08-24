@@ -1,37 +1,40 @@
 require 'spec_helper'
-require File.expand_path("../../models/voice/test_http_server", File.dirname(__FILE__))
 
-describe "voice_main" do
-  port = 33_190
-  http_server = nil
+describe "voice_main", http_server: true do
+  http.default port: 33_190
+  http.default doc_root: Rails.root.join("spec", "fixtures", "voice")
 
-  let(:voice_site) {
-    SS::Site.find_or_create_by(
-      name: "VoiceSite",
-      host: "voicehost",
-      domains: "127.0.0.1:#{port}"
-    )
-  }
-
-  before(:all) do
-    http_server = Voice::TestHttpServer.new(port)
-    http_server.start
+  let(:voice_site) do
+    SS::Site.find_or_create_by(name: "VoiceSite", host: "voicehost", domains: "127.0.0.1:33190")
   end
 
-  after(:all) do
-    http_server.stop if http_server
+  before do
+    # To stabilize spec, voice synthesis job is executed in-place process .
+    allow(SS::RakeRunner).to receive(:run_async).and_wrap_original do |_, *args|
+      config = { name: "default", model: "job:service", num_workers: 0, poll: %w(default voice_synthesis) }
+      config.stringify_keys!
+      Job::Service.run config
+    end
+    # To stabilize spec, bypass open jatalk/lame/sox.
+    allow(Voice::Converter).to receive(:convert).and_wrap_original do |_, *args|
+      _, _, output = args
+      Fs.binwrite(output, IO.binread("#{Rails.root}/spec/fixtures/voice/voice-disabled.wav"))
+      true
+    end
   end
 
   describe "#index", open_jtalk: true do
     context "when valid site is given" do
-      path = "#{rand(0x100000000).to_s(36)}.html"
+      before :all do
+        @path = "#{rand(0x100000000).to_s(36)}.html"
+      end
 
-      before :all  do
-        http_server.add_redirect("/#{path}", "/test-001.html")
+      before do
+        http.options real_path: "/test-001.html"
       end
 
       it "returns 202" do
-        url = "http://#{voice_site.domain}/#{path}"
+        url = "http://#{voice_site.domain}/#{@path}"
         visit voice_path(URI.escape(url, /[^0-9a-zA-Z]/n))
         expect(status_code).to eq 202
         expect(response_headers.keys).to include("Retry-After")
@@ -85,9 +88,8 @@ describe "voice_main" do
     context "when server responds 400" do
       path = "#{rand(0x100000000).to_s(36)}.html"
 
-      before :all  do
-        http_server.add_redirect("/#{path}", "/test-001.html")
-        http_server.add_options("/#{path}", status_code: 400)
+      before do
+        http.options real_path: "/test-001.html", status_code: 400
       end
 
       it "returns 404" do
@@ -101,9 +103,8 @@ describe "voice_main" do
     context "when server responds 404" do
       path = "#{rand(0x100000000).to_s(36)}.html"
 
-      before :all  do
-        http_server.add_redirect("/#{path}", "/test-001.html")
-        http_server.add_options("/#{path}", status_code: 404)
+      before do
+        http.options real_path: "/test-001.html", status_code: 404
       end
 
       it "returns 404" do
@@ -117,9 +118,8 @@ describe "voice_main" do
     context "when server responds 500" do
       path = "#{rand(0x100000000).to_s(36)}.html"
 
-      before :all  do
-        http_server.add_redirect("/#{path}", "/test-001.html")
-        http_server.add_options("/#{path}", status_code: 500)
+      before do
+        http.options real_path: "/test-001.html", status_code: 500
       end
 
       it "returns 404" do
@@ -130,23 +130,18 @@ describe "voice_main" do
       end
     end
 
-    context "when server timed out" do
+    context "when voice synthesis request is full" do
       path = "#{rand(0x100000000).to_s(36)}.html"
-      wait = 10
 
-      before :all  do
-        http_server.add_redirect("/#{path}", "/test-001.html")
-        http_server.add_options("/#{path}", wait: wait)
+      before do
+        http.options real_path: "/test-001.html"
       end
 
-      after(:all) do
-        http_server.release_wait
-      end
-
-      it "returns 404" do
-        url = "http://#{voice_site.domain}/#{path}?wait=#{wait}"
+      it "returns 429" do
+        allow(Voice::SynthesisJob).to receive(:call_async).and_raise(Job::SizeLimitExceededError)
+        url = "http://#{voice_site.domain}/#{path}"
         visit voice_path(URI.escape(url, /[^0-9a-zA-Z]/n))
-        expect(status_code).to eq 404
+        expect(status_code).to eq 429
         expect(Voice::File.where(url: url).count).to eq 0
       end
     end
@@ -154,9 +149,8 @@ describe "voice_main" do
     context "when server does not respond last_modified" do
       path = "#{rand(0x100000000).to_s(36)}.html"
 
-      before :all  do
-        http_server.add_redirect("/#{path}", "/test-001.html")
-        http_server.add_options("/#{path}", last_modified: nil)
+      before do
+        http.options real_path: "/test-001.html", last_modified: nil
       end
 
       it "returns 200" do

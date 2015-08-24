@@ -1,11 +1,14 @@
 module SS::BaseFilter
   extend ActiveSupport::Concern
+  include SS::AuthFilter
   include SS::LayoutFilter
   include History::LogFilter
 
   included do
-    helper EditorHelper
+    cattr_accessor(:user_class) { SS::User }
     cattr_accessor :model_class
+
+    helper SS::EditorHelper
     before_action :set_model
     before_action :logged_in?
     after_action :put_history_log, if: ->{ !request.get? && response.code =~ /^3/ }
@@ -20,6 +23,25 @@ module SS::BaseFilter
       end
   end
 
+  public
+    def stylesheets
+      @stylesheets || []
+    end
+
+    def stylesheet(path)
+      @stylesheets ||= []
+      @stylesheets << path unless @stylesheets.include?(path)
+    end
+
+    def javascripts
+      @javascripts || []
+    end
+
+    def javascript(path)
+      @javascripts ||= []
+      @javascripts << path unless @javascripts.include?(path)
+    end
+
   private
     def set_model
       @model = self.class.model_class
@@ -27,14 +49,7 @@ module SS::BaseFilter
 
     def logged_in?
       return @cur_user if @cur_user
-
-      if session[:user]
-        u = SS::Crypt.decrypt(session[:user]).to_s.split(",", 3)
-        return unset_user redirect: true if u[1] != remote_addr.to_s
-        return unset_user redirect: true if u[2] != request.user_agent.to_s
-        @cur_user = SS::User.find u[0].to_i rescue nil
-      end
-
+      @cur_user = get_user_by_session
       return @cur_user if @cur_user
       unset_user
 

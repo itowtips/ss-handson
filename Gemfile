@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "rails", "4.2.1"
+gem "rails", "4.2.3"
 gem 'sass-rails', '~> 5.0'
 gem "uglifier", ">= 1.3.0"
 gem 'coffee-rails', '~> 4.1.0'
@@ -24,6 +24,7 @@ gem "dynamic_form"
 gem "zipruby"
 gem "jquery-turbolinks"
 gem "jquery-cookie-rails"
+gem 'jquery-form-rails'
 gem "redcarpet"
 gem "compass-rails"
 gem "kaminari"
@@ -41,6 +42,18 @@ gem "browser"
 #gem 'coffee-rails-source-maps'
 gem "net-ldap"
 gem "diffy"
+gem "ungarbled"
+gem "fullcalendar-rails", "2.3.1.0"
+gem "momentjs-rails", "2.10.2"
+gem 'bxslider-rails'
+
+# OAuth
+gem 'omniauth'
+gem 'omniauth-twitter'
+gem 'omniauth-facebook'
+gem 'omniauth-yahoojp'
+gem 'omniauth-google-oauth2'
+gem 'omniauth-github'
 
 #gem "rails-dev-boost", git: "git://github.com/thedarkone/rails-dev-boost.git", group: :development
 
@@ -87,4 +100,5 @@ group :development do
   gem 'brakeman', require: false
   gem 'guard-brakeman', require: false
   gem 'yard', require: false
+  #gem 'rack-mini-profiler'
 end

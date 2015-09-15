@@ -1,9 +1,10 @@
 VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "ss-handson"
-  config.vm.box_url = "https://github.com/shirasagi/ss-vagrant/releases/download/v0.7.0-SNAPSHOT-20150406-1849/ss-vagrant-virtualbox.box"
+  config.vm.box = "ss-vagrant-v0.9.5"
+  config.vm.box_url = "https://github.com/shirasagi/ss-vagrant/releases/download/v0.9.5/ss-vagrant-virtualbox-x86_64.box"
   config.vm.network :forwarded_port, guest: 3000, host: 3000
-  config.vm.network :private_network, ip: "192.168.33.10"
+  # add hostonly network
+  # config.vm.network :private_network, ip: "192.168.33.10"
 
   config.vm.provider :virtualbox do |vb|
     # see: http://blog.shibayu36.org/entry/2013/08/12/090545

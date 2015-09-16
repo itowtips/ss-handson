@@ -1,0 +1,68 @@
+# MongoDBのインストール
+sudo vi /etc/yum.repos.d/mongodb-org-3.0.repo
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[mongodb-org-3.0]
+name=MongoDB Repository
+baseurl=http://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.0/x86_64/
+gpgcheck=0
+enabled=1
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+sudo yum install mongodb-org
+sudo service mongod start
+
+# Prequicities
+sudo yum install wget git ImageMagick ImageMagick-devel
+
+
+# ハンズオン用シラサギインストール
+git clone https://github.com/itowtips/ss-handson sample
+cd sample
+cp -n config/samples/*.{rb,yml} config/
+bundle install
+
+vi config/mongoid.yml
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# mongodb configuration
+production:
+  sessions:
+    default:
+      database: ss_sample
+
+development:
+  sessions:
+    default:
+      database: ss_sample
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+vi config/environment.yml
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# default environment
+RAILS_ENV: development
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+rake db:drop
+rake db:create_indexes
+rake ss:create_user data='{ name: "システム管理者", email: "sys@example.jp", password: "pass" }'
+rake ss:create_site data='{ name: "サイト名", host: "www", domains: "localhost:3000" }'
+rake db:seed name=users site=www
+rake db:seed name=demo site=www
+rake unicorn:start
+
+# ブログページ作成
+git checkout -b sample-blog-page origin/sample-blog-page
+rake unicorn:stop
+rake unicorn:start
+
+# Mongoドキュメント確認
+mongo
+use ss_sample
+db.cms_pages.find({route: "blog/page"})
+
+# 天気入力フォーム作成
+git checkout -b sample-blog-addon origin/sample-blog-addon
+rake unicorn:restart
+
+# 一覧フォルダー作成
+git checkout -b sample-blog-node origin/sample-blog-node
+rake unicorn:restart

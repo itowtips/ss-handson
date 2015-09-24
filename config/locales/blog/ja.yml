@@ -7,11 +7,13 @@ ja:
     rain: ☂
     snow: ☃
     thunder: "⚡"
+    author_comment: 'この記事は%{author}が作成しました'
 
   modules:
     blog: ブログ
     addons:
       blog/weather: 今日の天気
+      blog/author: 作成者
 
   cms:
     nodes:
@@ -21,3 +23,4 @@ ja:
     attributes:
       cms/model/page:
         weather: 天気
+        author: 書いた人

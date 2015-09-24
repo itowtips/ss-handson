@@ -10,7 +10,7 @@ module Blog::Addon
       public
         def weather_options
           [ ["晴れ", "sunny"], ["曇り", "cloudy"],
-            ["雨", "rain"], ["雪", "snow"],
+            ["雨", "rain"], ["雪", "snow"], ["雷", "thunder"],
           ]
         end
     end
